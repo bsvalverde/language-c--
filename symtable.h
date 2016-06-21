@@ -27,8 +27,8 @@ private:
 
 class Symbol {
 public:
-	Symbol();
-	Symbol(std::string name, Type type) : name(name), type(type) {}
+	Symbol() { }
+	Symbol(std::string name, Type type) : name(name), type(type) { }
 	void setType(Type type);
 
 	std::string name;

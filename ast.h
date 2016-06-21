@@ -15,14 +15,14 @@ typedef std::list<Node*> NodeList;
 class Node { //nodo generalizado
 public:
     virtual ~Node() {}
-    virtual std::string analyzeTree() {return "";}
+    virtual std::string analyzeTree() { return ""; }
     Type type;
 };
 
 class Block : public Node {
 public:
 	NodeList nodes;
-	Block() {}
+	Block() { }
 	std::string analyzeTree();
 };
 
@@ -71,7 +71,7 @@ public:
 class DeclVar : public Node { //nodo utilizado na declaração de variáveis. separado das operações unárias para facilitar o analyzeTree()
 public:
 	Node* next;
-	DeclVar(Node* next) : next(next) {}
+	DeclVar(Node* next) : next(next) { }
 	std::string analyzeTree();
 };
 
@@ -88,14 +88,14 @@ class FunCall : public Node {
 public:
 	std::string name;
 	Node* args;
-	FunCall(std::string name, Node* args) : name(name), args(args) {}
+	FunCall(std::string name, Node* args) : name(name), args(args) { }
 	std::string analyzeTree();
 };
 
 class Return : public Node {
 public:
 	Node* expr;
-	Return(Node* expr) : expr(expr) {}
+	Return(Node* expr) : expr(expr) { }
 	std::string analyzeTree();
 };
 
@@ -104,7 +104,7 @@ public:
 	Node* condition;
 	Node* then;
 	Node* _else;
-	Conditional(Node* condition, Node* then, Node* _else) : condition(condition), then(then), _else(_else) {}
+	Conditional(Node* condition, Node* then, Node* _else) : condition(condition), then(then), _else(_else) { }
 	std::string analyzeTree();
 };
 
@@ -112,7 +112,7 @@ class Loop : public Node {
 public:
 	Node* condition;
 	Node* loopBlock;
-	Loop(Node* condition, Node* loopBlock) : condition(condition), loopBlock(loopBlock) {}
+	Loop(Node* condition, Node* loopBlock) : condition(condition), loopBlock(loopBlock) { }
 	std::string analyzeTree();
 };
 

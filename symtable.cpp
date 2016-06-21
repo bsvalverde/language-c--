@@ -25,10 +25,10 @@ bool SymTable::hasSymbol(std::string name) {
 
 }
 
-Variable::Variable() {
+Variable::Variable() : Symbol() {
 
 }
 
-Function::Function() {
+Function::Function() : Symbol() {
 
 }
