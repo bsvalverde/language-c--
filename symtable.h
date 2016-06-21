@@ -27,7 +27,7 @@ private:
 
 class Symbol {
 public:
-	Symbol() { }
+	Symbol(std::string name) { }
 	Symbol(std::string name, Type type) : name(name), type(type) { }
 	void setType(Type type);
 
@@ -37,7 +37,7 @@ public:
 
 class Variable : public Symbol {
 public:
-	Variable();
+	Variable(std::string name);
 
 private:
 	AST::Node* lastModification;
@@ -45,7 +45,7 @@ private:
 
 class Function : public Symbol {
 public:
-	Function();
+	Function(std::string name);
 
 private:
 	//TODO ter uma lista de simbolos representando os parametros da funcao?
