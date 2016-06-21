@@ -1,8 +1,11 @@
 %{
 #include <string>
 
+#include "ast.h"
+#include "symtable.h"
+
 AST::Block* root;
-ST::SymTable* symtable = new ST::SymTable();
+ST::SymTable* symtable = new ST::SymTable(NULL);
 
 extern int yylex();
 extern void yyerror(const char* s, ...);	
@@ -11,33 +14,33 @@ extern void yyerror(const char* s, ...);
 %define parse.trace
 
 %union {
-	const char* inteiro;
-	const char* real;
-	const char* booleano;
+	const char* _int;
+	const char* _double;
+	const char* _bool;
 	const char* id;
 
 	Type typeEnum;
-	AST::Arguments* argList;
+	//AST::Arguments* argList;
 
 	AST::Node* node;
 	AST::Block* block;
 }
 
 //Definição dos tokens
-%token <inteiro> T_INT
-%token <real> T_REAL
-%token <booleano> T_BOOL
+%token <_int> T_INT
+%token <_double> T_DOUBLE
+%token <_bool> T_BOOL
 %token <id> T_ID
 %token T_PLUS T_MULT T_SUB T_DIV T_ATTR
 %token T_AND T_OR T_NOT
 %token T_APAR T_FPAR 
-%token T_DINT T_DREAL T_DBOOL
+%token T_DINT T_DREAL T_DBOOL T_DVOID
 %token T_NEQ T_EQ T_GTE T_GT T_LTE T_LT 
 %token T_ENDL T_COMMA
-// %token T_DEF T_DECL T_END T_FUN T_RET
-// %token T_IF T_THEN T_ELSE
-// %token T_WHILE T_DO
-// %token T_TYPE T_DOT
+%token T_RET
+%token T_IF T_ELSE
+%token T_WHILE T_DO
+%token T_ACH T_FCH
 
 //Definição de tipos não-terminais
 %type <block> program code //cmds funcmds
@@ -92,7 +95,7 @@ decl	: type listvar {
 		}
 		| type T_ID T_ATTR expr {
 			ST::Symbol* s = symtable->addSymbol($2, $1);
-			AST::Variable* var = new AST::Variable($2);
+			AST::Variable* var = new AST::Variable($2, NULL);
 			var->type = $1;
 			$$ = new AST::AssignVar(var, $4);
 		}
@@ -172,7 +175,7 @@ expr	: const
 		;
 
 const   : T_INT { $$ = new AST::Const($1, Type::inteiro); }
-		| T_REAL { $$ = new AST::Const($1, Type::real); }
+		| T_DOUBLE { $$ = new AST::Const($1, Type::real); }
 		| T_BOOL { $$ = new AST::Const($1, Type::booleano); }
 		;
 

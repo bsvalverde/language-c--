@@ -10,7 +10,7 @@ void yyerror(const char* s, ...);
 
 id [a-z]+
 
-inteiro [0-9]+
+int [0-9]+
 double [0-9]+\.[0-9]+
 bool "true"|"false"
 
@@ -21,16 +21,16 @@ bool "true"|"false"
 \n ;
 
  /* Tipos */
-{inteiro} {
-	yylval.inteiro = strdup(yytext); /*Vai precisar mudar quando fizer o interpretador*/
+{int} {
+	yylval._int = strdup(yytext); /*Vai precisar mudar quando fizer o interpretador*/
 	return T_INT;
 }
 {double} {
-	yylval.double = strdup(yytext);
+	yylval._double = strdup(yytext);
 	return T_DOUBLE;
 }
 {bool} {
-	yylval.booleano = strdup(yytext);
+	yylval._bool = strdup(yytext);
 	return T_BOOL;
 }
 
@@ -65,7 +65,6 @@ bool "true"|"false"
  
  /* Tokens de Condição */
 "if"		{return T_IF;}
-"then"		{return T_THEN;}
 "else"		{return T_ELSE;}
 
  /* Tokens de Laço */

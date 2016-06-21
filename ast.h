@@ -1,7 +1,10 @@
 /* Abstract Syntax Tree */
-pragma once
+#pragma once
 
 #include <list>
+#include <string>
+
+#include "enums.h"
 
 namespace AST {
 
@@ -12,7 +15,7 @@ typedef std::list<Node*> NodeList;
 class Node { //nodo generalizado
 public:
     virtual ~Node() {}
-    virtual std::string printTree() {return "";}
+    virtual std::string analyzeTree() {return "";}
     Type type;
 };
 
@@ -20,7 +23,7 @@ class Block : public Node {
 public:
 	NodeList nodes;
 	Block() {}
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class UnOp : public Node {
@@ -30,7 +33,7 @@ public:
 	UnOp(UnOperation op, Node* next) : op(op), next(next) {
 		this->type = next->type;
 	}
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class BinOp : public Node {
@@ -39,7 +42,7 @@ public:
 	Node* left;
 	Node* right;
 	BinOp(Node* left, BinOperation op, Node* right) : left(left), op(op), right(right) { }
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class Variable : public Node {
@@ -47,29 +50,29 @@ public:
 	std::string name;
 	Node* next;
 	Variable(std::string name, Node* next) : name(name), next(next) { }
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class Const : public Node { //nodo utilizado no uso de valores constantes (1, .1 ou até TRUE)
 public:
 	std::string value;
-	Const(std::string value, Type type) : value(value), type(type) { }
-	std::string printTree();
+	Const(std::string value, Type type) : value(value) { this->type = type; }
+	std::string analyzeTree();
 };
 
-class AssignVar : public Node { //nodo utilizado na atribuição de variáveis. separado das operações binárias para facilitar a operação printTree()
+class AssignVar : public Node { //nodo utilizado na atribuição de variáveis. separado das operações binárias para facilitar a operação analyzeTree()
 public:
 	Node* var;
 	Node* value;
-	AssignVar(Node* var, Node* value) : var(var), value(value), arrExpr(arrExpr) { }
-	std::string printTree();
+	AssignVar(Node* var, Node* value) : var(var), value(value) { }
+	std::string analyzeTree();
 };
 
-class DeclVar : public Node { //nodo utilizado na declaração de variáveis. separado das operações unárias para facilitar o printTree()
+class DeclVar : public Node { //nodo utilizado na declaração de variáveis. separado das operações unárias para facilitar o analyzeTree()
 public:
 	Node* next;
 	DeclVar(Node* next) : next(next) {}
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class Par : public Node { //nodo utilizado quando há parênteses nas fórmulas
@@ -78,7 +81,7 @@ public:
 	Par(Node* content) : content(content) {
 		this->type = content->type;
 	}
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class FunCall : public Node {
@@ -86,14 +89,14 @@ public:
 	std::string name;
 	Node* args;
 	FunCall(std::string name, Node* args) : name(name), args(args) {}
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class Return : public Node {
 public:
 	Node* expr;
 	Return(Node* expr) : expr(expr) {}
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class Conditional : public Node {
@@ -102,7 +105,7 @@ public:
 	Node* then;
 	Node* _else;
 	Conditional(Node* condition, Node* then, Node* _else) : condition(condition), then(then), _else(_else) {}
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 class Loop : public Node {
@@ -110,7 +113,7 @@ public:
 	Node* condition;
 	Node* loopBlock;
 	Loop(Node* condition, Node* loopBlock) : condition(condition), loopBlock(loopBlock) {}
-	std::string printTree();
+	std::string analyzeTree();
 };
 
 }
