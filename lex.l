@@ -1,6 +1,7 @@
 %{
 #include <string>
 #include "ast.h"
+#include "parser.h"
 extern int yylineno;
 void yyerror(const char* s, ...);
 %}

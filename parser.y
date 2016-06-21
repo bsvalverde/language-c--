@@ -2,7 +2,7 @@
 #include <string>
 
 AST::Block* root;
-//ST::SymTable* symtable = new ST::SymTable(NULL);
+ST::SymTable* symtable = new ST::SymTable();
 
 extern int yylex();
 extern void yyerror(const char* s, ...);	
@@ -24,31 +24,37 @@ extern void yyerror(const char* s, ...);
 }
 
 //Definição dos tokens
-// %token <inteiro> T_INT
-// %token <real> T_REAL
-// %token <booleano> T_BOOL
-// %token <id> T_ID
-// %token T_PLUS T_MULT T_SUB T_DIV T_ATTR
-// %token T_AND T_OR T_NOT
-// %token T_APAR T_FPAR 
-// %token T_AARR T_FARR
-// %token T_DINT T_DREAL T_DBOOL
-// %token T_NEQ T_EQ T_GTE T_GT T_LTE T_LT 
-// %token T_COLON T_ENDL T_COMMA
+%token <inteiro> T_INT
+%token <real> T_REAL
+%token <booleano> T_BOOL
+%token <id> T_ID
+%token T_PLUS T_MULT T_SUB T_DIV T_ATTR
+%token T_AND T_OR T_NOT
+%token T_APAR T_FPAR 
+%token T_DINT T_DREAL T_DBOOL
+%token T_NEQ T_EQ T_GTE T_GT T_LTE T_LT 
+%token T_ENDL T_COMMA
 // %token T_DEF T_DECL T_END T_FUN T_RET
 // %token T_IF T_THEN T_ELSE
 // %token T_WHILE T_DO
 // %token T_TYPE T_DOT
 
 //Definição de tipos não-terminais
-// %type <block> program code cmds funcmds
-// %type <node> global cmd funcmd decl listvar attr expr const arr arrexpr fun params cond loop composite multdecl dot
-// %type <typeEnum> type
+%type <block> program code //cmds funcmds
+%type <node> global /*cmd funcmd*/ decl listvar /*attr*/ expr const //fun params cond loop composite multdecl dot
+%type <typeEnum> type
 // %type <argList> arglist
 // %type <node> newscope endscope
 
 //Precedencia de operadores
-//%left
+%left T_OR T_AND
+%left T_NOT
+%left T_EQ T_NEQ
+%left T_LT T_GT T_LTE T_GTE
+%left T_PLUS T_SUB
+%left T_MULT T_DIV
+%right U_NEG
+%left U_PAR
 %nonassoc error
 
 %start program
@@ -70,7 +76,7 @@ code	: global {
 		;
 
 global  : decl T_ENDL
-		| fun
+//		| fun
         | error {yyerrok; $$=NULL;}
 		;
 
@@ -78,16 +84,18 @@ decl	: type listvar { }
 		| type T_ID T_ATTR expr { }
 		;
 
-fun 	: type T_ID T_APAR params T_FPAR T_ACH cmds T_FCH { }
-		;
+//fun 	: type T_ID T_APAR params T_FPAR T_ACH cmds T_FCH { }
+//		;
 
 type 	: T_DINT { $$ = Type::inteiro; }
 		| T_DREAL { $$ = Type::real; }
 		| T_DBOOL { $$ = Type::booleano; }
-		| T_DVOID { $$ = Type::_void; }
+//		| T_DVOID { $$ = Type::_void; }
 		;
 
-listvar	: T_ID { }
+listvar	: T_ID {
+			symtable->
+}
 		| listvar T_COMMA T_ID { }
 		;
 
@@ -146,38 +154,38 @@ const   : T_INT { $$ = new AST::Const($1, Type::inteiro); }
 		| T_BOOL { $$ = new AST::Const($1, Type::booleano); }
 		;
 
-params	: {}
-		;
+// params	: {}
+// 		;
 
-cmds	: cmd { 
-			$$ = new AST::Block(); 
-			$$->nodes.push_back($1);
-		}
-		| cmds cmd {
-			if($2 != NULL) $1->nodes.push_back($2);
-		}
-		;
+// cmds	: cmd { 
+// 			$$ = new AST::Block(); 
+// 			$$->nodes.push_back($1);
+// 		}
+// 		| cmds cmd {
+// 			if($2 != NULL) $1->nodes.push_back($2);
+// 		}
+// 		;
 
-cmd 	: decl T_ENDL
-		| attr T_ENDL
-		| cond
-		| loop
-		| ret
-		;
+// cmd 	: decl T_ENDL
+// 		| attr T_ENDL
+// 		| cond
+// 		| loop
+// 		| ret
+// 		;
 
-attr 	: T_ID T_ATTR expr { }
-		;
+// attr 	: T_ID T_ATTR expr { }
+// 		;
 
-cond	: { }
-		;
+// cond	: { }
+// 		;
 
-loop	: { }
-		;
+// loop	: { }
+// 		;
 
-newscope: { }
-		;
+// newscope: { }
+// 		;
 
-endscope: { }
-		;
+// endscope: { }
+// 		;
 
 %%
