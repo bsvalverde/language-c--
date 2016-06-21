@@ -1,7 +1,7 @@
 FLEX=flex
 BISON=bison
 CC=clang++
-PARAM=-stc=c++11 -fcxx-exceptions -Wno-deprecated-register
+PARAM=-std=c++11 -fcxx-exceptions -Wno-deprecated-register
 OUTPUT=c--
 TESTFILE=testfile
 
