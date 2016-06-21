@@ -80,8 +80,22 @@ global  : decl T_ENDL
         | error {yyerrok; $$=NULL;}
 		;
 
-decl	: type listvar { }
-		| type T_ID T_ATTR expr { }
+decl	: type listvar {
+			AST::Variable* var = (AST::Variable*)$2;
+			while(var != NULL){
+				ST::Symbol* s = symtable->getSymbol(var->name);
+				s->type = $1;
+				var->type = $1;
+				var = (AST::Variable*)var->next;
+			}
+			$$ = new AST::DeclVar($2);
+		}
+		| type T_ID T_ATTR expr {
+			ST::Symbol* s = symtable->addSymbol($2, $1);
+			AST::Variable* var = new AST::Variable($2);
+			var->type = $1;
+			$$ = new AST::AssignVar(var, $4);
+		}
 		;
 
 //fun 	: type T_ID T_APAR params T_FPAR T_ACH cmds T_FCH { }
@@ -94,14 +108,22 @@ type 	: T_DINT { $$ = Type::inteiro; }
 		;
 
 listvar	: T_ID {
-			symtable->
-}
-		| listvar T_COMMA T_ID { }
+			symtable->addSymbol($1);
+			$$ = new AST::Variable($1, NULL);
+		}
+		| listvar T_COMMA T_ID {
+			symtable->addSymbol($3);
+			$$ = new AST::Variable($3, $1);
+		}
 		;
 
 expr	: const 
-		| T_ID { }
-		| T_ID T_APAR args T_FPAR { }
+		| T_ID {
+			ST::Symbol* s = symtable->getSymbol($1);
+			$$ = new AST::Variable($1, NULL);
+			$$->type = s->type;
+		}
+//		| T_ID T_APAR args T_FPAR { }
 		| expr T_PLUS expr {
 			$$ = new AST::BinOp($1, plus, $3);
 		}

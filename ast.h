@@ -53,23 +53,15 @@ public:
 class Const : public Node { //nodo utilizado no uso de valores constantes (1, .1 ou até TRUE)
 public:
 	std::string value;
-	Const(std::string value, Type type) : value(value) {
-		this->type = type;
-	}
+	Const(std::string value, Type type) : value(value), type(type) { }
 	std::string printTree();
 };
 
 class AssignVar : public Node { //nodo utilizado na atribuição de variáveis. separado das operações binárias para facilitar a operação printTree()
 public:
-	Node* left;
-	Node* right;
-	Node* arrExpr;
-	AssignVar(Node* left, Node* right, Node* arrExpr) : left(left), right(right), arrExpr(arrExpr) {
-		this->type = left->type;
-		if(left->type != right->type && (left->type != Type::real || right->type != Type::inteiro)){
-			yyerror(("semantico: operacao atribuicao espera " + Stringfier::typeStringM(left->type) + " mas recebeu " + Stringfier::typeStringM(right->type) + ".").c_str());
-		}
-	}
+	Node* var;
+	Node* value;
+	AssignVar(Node* var, Node* value) : var(var), value(value), arrExpr(arrExpr) { }
 	std::string printTree();
 };
 
