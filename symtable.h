@@ -27,12 +27,13 @@ private:
 
 class Symbol {
 public:
-	Symbol(std::string name) { }
-	Symbol(std::string name, Type type) : name(name), type(type) { }
+	Symbol(std::string name, SymbolType symbolType=SymbolType::undefined) { }
+	Symbol(std::string name, Type type, SymbolType symbolType=SymbolType::undefined) : name(name), type(type) { }
 	void setType(Type type);
 
 	std::string name;
 	Type type;
+	SymbolType symbolType;
 };
 
 class Variable : public Symbol {

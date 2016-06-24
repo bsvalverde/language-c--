@@ -43,11 +43,11 @@ extern void yyerror(const char* s, ...);
 %token T_ACH T_FCH
 
 //Definição de tipos não-terminais
-%type <block> program code //cmds funcmds
-%type <node> global /*cmd funcmd*/ decl listvar /*attr*/ expr const //fun params cond loop composite multdecl dot
+%type <block> program code cmds //funcmds
+%type <node> global cmd /*funcmd*/ decl listvar attr expr const fun params cond condelse loop
 %type <typeEnum> type
 // %type <argList> arglist
-// %type <node> newscope endscope
+%type <node> newscope endscope
 
 //Precedencia de operadores
 %left T_OR T_AND
@@ -79,8 +79,8 @@ code	: global {
 		;
 
 global  : decl T_ENDL
-//		| fun
-        | error {yyerrok; $$=NULL;}
+		| fun
+        | error T_ENDL {yyerrok; $$=NULL;}
 		;
 
 decl	: type listvar {
@@ -101,13 +101,17 @@ decl	: type listvar {
 		}
 		;
 
-//fun 	: type T_ID T_APAR params T_FPAR T_ACH cmds T_FCH { }
-//		;
+fun 	: type T_ID T_APAR params T_FPAR T_ACH cmds T_FCH {
+			AST::Function* function = new AST::Function($2, $4, $7);
+			function->type = $1;
+			$$ = function;
+		}
+		;
 
-type 	: T_DINT { $$ = Type::inteiro; }
-		| T_DREAL { $$ = Type::real; }
-		| T_DBOOL { $$ = Type::booleano; }
-//		| T_DVOID { $$ = Type::_void; }
+type 	: T_DINT { $$ = Type::_int; }
+		| T_DREAL { $$ = Type::_double; }
+		| T_DBOOL { $$ = Type::_bool; }
+		| T_DVOID { $$ = Type::_void; }
 		;
 
 listvar	: T_ID {
@@ -174,43 +178,72 @@ expr	: const
 		}
 		;
 
-const   : T_INT { $$ = new AST::Const($1, Type::inteiro); }
-		| T_DOUBLE { $$ = new AST::Const($1, Type::real); }
-		| T_BOOL { $$ = new AST::Const($1, Type::booleano); }
+const   : T_INT { $$ = new AST::Const($1, Type::_int); }
+		| T_DOUBLE { $$ = new AST::Const($1, Type::_double); }
+		| T_BOOL { $$ = new AST::Const($1, Type::_bool); }
 		;
 
-// params	: {}
-// 		;
+//TODO implementar
+params	: { $$ = NULL;}
+		;
 
-// cmds	: cmd { 
-// 			$$ = new AST::Block(); 
-// 			$$->nodes.push_back($1);
-// 		}
-// 		| cmds cmd {
-// 			if($2 != NULL) $1->nodes.push_back($2);
-// 		}
-// 		;
+cmds	: cmd { 
+			$$ = new AST::Block(); 
+			$$->nodes.push_back($1);
+		}
+		| cmds cmd {
+			if($2 != NULL) $1->nodes.push_back($2);
+		}
+		;
 
-// cmd 	: decl T_ENDL
-// 		| attr T_ENDL
-// 		| cond
-// 		| loop
-// 		| ret
-// 		;
+cmd 	: decl T_ENDL
+		| attr T_ENDL
+		| cond
+		| loop
+		// | ret
+		| error T_ENDL { yyerrok; $$=NULL; } //TODO ver como faz pra acusar erro dentro de funcao
+		;
 
-// attr 	: T_ID T_ATTR expr { }
-// 		;
+attr 	: T_ID T_ATTR expr {
+			ST::Symbol* symbol = symtable->getSymbol($1);
+			if(symbol->symbolType == SymbolType::function) {
+				yyerror("ERROR: using function as variable.");
+			}
+			$$ = new AST::AssignVar(new AST::Variable($1, NULL), $3);
+		}
+		;
 
-// cond	: { }
-// 		;
+cond	: T_IF T_APAR expr T_FPAR T_ACH newscope cmds endscope T_FCH condelse {
+			$$ = new AST::Conditional($3, $7, $10);
+		}
+		| T_IF T_APAR expr T_FPAR newscope cmd endscope condelse {
+			$$ = new AST::Conditional($3, $6, $8);
+		}
+		;
 
-// loop	: { }
-// 		;
+condelse: T_ELSE cond { 
+			$$ = $2;
+		}
+		| T_ELSE T_ACH newscope cmds endscope T_FCH { 
+			$$ = $4;
+		}
+		| { 
+			$$ = NULL; 
+		}
 
-// newscope: { }
-// 		;
+loop	: T_WHILE T_APAR expr T_FPAR T_ACH newscope cmds endscope T_ACH {
+			$$ = new AST::Loop($3, $7);
+		}
+		;
 
-// endscope: { }
-// 		;
+newscope: {
+			$$ = NULL;
+		}
+		;
+
+endscope: {
+			$$ = NULL;
+		}
+		;
 
 %%

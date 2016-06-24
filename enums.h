@@ -2,10 +2,16 @@
 
 enum Type {
 	desconhecido,
-	inteiro,
-	real,
-	booleano,
+	_int,
+	_double,
+	_bool,
 	_void
+};
+
+enum SymbolType {
+	undefined,
+	function,
+	variable
 };
 
 enum BinOperation {

@@ -3,34 +3,44 @@
 using namespace AST;
 
 std::string Block::analyzeTree() {
-	return "";
+	std::string retorno = "";
+	for(Node* node : nodes) {
+		if(node != NULL)
+			retorno += node->analyzeTree() + "\n";
+	}
+	return retorno;
 }
 
 std::string UnOp::analyzeTree() {
-	return "";
+	return "UnOp";
 }
 
 std::string BinOp::analyzeTree() {
-	return "";
+	return "BinOp";
+	//llvmbuilder->buildSum(left, right);
 }
 
 std::string Variable::analyzeTree() {
-	return "";
+	return "Variable";
 }
 
 std::string Const::analyzeTree() {
-	return "";
+	return "Const";
 }
 
 std::string AssignVar::analyzeTree() {
-	return "";
+	return "AssignVar";
 }
 
 std::string DeclVar::analyzeTree() {
-	return "";
+	return "DeclVar";
 }
 
 std::string Par::analyzeTree() {
+	return "";
+}
+
+std::string Function::analyzeTree() {
 	return "";
 }
 
@@ -43,7 +53,14 @@ std::string Return::analyzeTree() {
 }
 
 std::string Conditional::analyzeTree() {
-	return "";
+	printf("entrando no cond");
+	std::string retorno = "Expressao condicional";
+	retorno += "\nIF:\n" + this->condition->analyzeTree();
+	retorno += "\nTHEN:\n" + this->then->analyzeTree();
+	if(this->_else != NULL){
+		retorno += "ELSE:\n" + this->_else->analyzeTree();
+	}
+	return retorno;
 }
 
 std::string Loop::analyzeTree() {

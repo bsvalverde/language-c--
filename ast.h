@@ -84,6 +84,15 @@ public:
 	std::string analyzeTree();
 };
 
+class Function : public Node {
+public:
+	std::string name;
+	Node* params;
+	Block* code;
+	Function(std::string name, Node* params, Block* code) : name(name), params(params), code(code) { }
+	std::string analyzeTree();
+};
+
 class FunCall : public Node {
 public:
 	std::string name;

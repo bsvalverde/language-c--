@@ -43,9 +43,9 @@ bool SymTable::hasSymbol(std::string name) {
 }
 
 Variable::Variable(std::string name) : Symbol(name) {
-
+	this->symbolType = SymbolType::variable;
 }
 
 Function::Function(std::string name) : Symbol(name) {
-
+	this->symbolType = SymbolType::function;
 }
