@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ast.h"
+#include "llvmbuilder.h"
 #include "symtable.h"
 
 extern AST::Block* root; //set on Bison file
@@ -8,6 +9,7 @@ extern int yydebug;
 
 int main(int argc, char **argv)
 {
+	auto _builder = new LlvmBuilder();
     //yydebug = 1;
     yyparse();                  //parses whole data
     std::cout << std::endl;
