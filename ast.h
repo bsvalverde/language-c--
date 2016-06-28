@@ -30,9 +30,7 @@ class UnOp : public Node {
 public:
 	UnOperation op;
 	Node* next;
-	UnOp(UnOperation op, Node* next) : op(op), next(next) {
-		this->type = next->type;
-	}
+	UnOp(UnOperation op, Node* next) : op(op), next(next) { this->type = next->type; }
 	std::string analyzeTree();
 };
 
@@ -41,7 +39,9 @@ public:
 	BinOperation op;
 	Node* left;
 	Node* right;
-	BinOp(Node* left, BinOperation op, Node* right) : left(left), op(op), right(right) { }
+	BinOp(Node* left, BinOperation op, Node* right) : left(left), op(op), right(right) {
+		this->type = Type::desconhecido;
+	}
 	std::string analyzeTree();
 };
 
@@ -49,7 +49,7 @@ class Variable : public Node {
 public:
 	std::string name;
 	Node* next;
-	Variable(std::string name, Node* next) : name(name), next(next) { }
+	Variable(std::string name, Node* next, Type type) : name(name), next(next) { this->type = type; }
 	std::string analyzeTree();
 };
 
@@ -78,9 +78,7 @@ public:
 class Par : public Node { //nodo utilizado quando há parênteses nas fórmulas
 public:
 	Node* content;
-	Par(Node* content) : content(content) {
-		this->type = content->type;
-	}
+	Par(Node* content) : content(content) { this->type = content->type; }
 	std::string analyzeTree();
 };
 
@@ -89,7 +87,15 @@ public:
 	std::string name;
 	Node* params;
 	Block* code;
-	Function(std::string name, Node* params, Block* code) : name(name), params(params), code(code) { }
+	Function(std::string name, Node* params, Block* code, Type type) : name(name), params(params), code(code) { this->type = type; }
+	std::string analyzeTree();
+};
+
+class Parameter : public Node {
+public:
+	std::string name;
+	Node* next;
+	Parameter(std::string name, Node* next, Type type) : name(name), next(next) { this->type = type; }
 	std::string analyzeTree();
 };
 
@@ -97,14 +103,21 @@ class FunCall : public Node {
 public:
 	std::string name;
 	Node* args;
-	FunCall(std::string name, Node* args) : name(name), args(args) { }
+	FunCall(std::string name, Node* args) : name(name), args(args) { this->type = Type::desconhecido; }
+	std::string analyzeTree();
+};
+
+class Arguments : public Node {
+public:
+	NodeList arguments;
+	Arguments() { }
 	std::string analyzeTree();
 };
 
 class Return : public Node {
 public:
 	Node* expr;
-	Return(Node* expr) : expr(expr) { }
+	Return(Node* expr) : expr(expr) { this->type = expr->type; }
 	std::string analyzeTree();
 };
 

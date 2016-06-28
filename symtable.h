@@ -15,7 +15,6 @@ class Symbol;
 class SymTable {
 public:
 	SymTable(SymTable* superScope);
-	Symbol* addSymbol(std::string name);
 	Symbol* addSymbol(std::string name, Type type);
 	Symbol* getSymbol(std::string name);
 private:
@@ -33,6 +32,7 @@ public:
 
 	std::string name;
 	Type type;
+	//TYPE?! RENOMEAR TODO
 	SymbolType symbolType;
 };
 
