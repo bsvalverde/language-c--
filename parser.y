@@ -6,6 +6,7 @@
 
 AST::Block* root;
 ST::SymTable* symtable = new ST::SymTable(NULL);
+Type inUse = Type::desconhecido;
 
 extern int yylex();
 extern void yyerror(const char* s, ...);	
@@ -20,7 +21,7 @@ extern void yyerror(const char* s, ...);
 	const char* id;
 
 	Type typeEnum;
-	//AST::Arguments* argList;
+	AST::Arguments* argList;
 
 	AST::Node* node;
 	AST::Block* block;
@@ -43,10 +44,10 @@ extern void yyerror(const char* s, ...);
 %token T_ACH T_FCH
 
 //Definição de tipos não-terminais
-%type <block> program code cmds //funcmds
-%type <node> global cmd /*funcmd*/ decl listvar attr expr const fun params cond condelse loop
+%type <block> program code cmds ccmds
+%type <node> global cmd decl listvar attr expr const fun params cond loop
 %type <typeEnum> type
-// %type <argList> arglist
+%type <argList> args
 %type <node> newscope endscope
 
 //Precedencia de operadores
@@ -84,53 +85,57 @@ global  : decl T_ENDL
 		;
 
 decl	: type listvar {
-			AST::Variable* var = (AST::Variable*)$2;
-			while(var != NULL){
-				ST::Symbol* s = symtable->getSymbol(var->name);
-				s->type = $1;
-				var->type = $1;
-				var = (AST::Variable*)var->next;
-			}
 			$$ = new AST::DeclVar($2);
 		}
 		| type T_ID T_ATTR expr {
 			ST::Symbol* s = symtable->addSymbol($2, $1);
-			AST::Variable* var = new AST::Variable($2, NULL);
-			var->type = $1;
+			AST::Variable* var = new AST::Variable($2, NULL, $1);
 			$$ = new AST::AssignVar(var, $4);
 		}
 		;
 
-fun 	: type T_ID T_APAR params T_FPAR T_ACH cmds T_FCH {
-			AST::Function* function = new AST::Function($2, $4, $7);
-			function->type = $1;
+fun 	: type T_ID T_APAR params T_FPAR T_ACH newscope cmds endscope T_FCH {
+			AST::Function* function = new AST::Function($2, $4, $8, $1);
 			$$ = function;
 		}
 		;
 
-type 	: T_DINT { $$ = Type::_int; }
-		| T_DREAL { $$ = Type::_double; }
-		| T_DBOOL { $$ = Type::_bool; }
-		| T_DVOID { $$ = Type::_void; }
+type 	: T_DINT {
+			inUse = Type::_int;
+			$$ = Type::_int;
+		 }
+		| T_DREAL {
+			inUse = Type::_double;
+			$$ = Type::_double;
+		}
+		| T_DBOOL {
+			inUse = Type::_bool;
+			$$ = Type::_bool;
+		}
+		| T_DVOID {
+			inUse = Type::_void;
+			$$ = Type::_void;
+		}
 		;
 
 listvar	: T_ID {
-			symtable->addSymbol($1);
-			$$ = new AST::Variable($1, NULL);
+			symtable->addSymbol($1, inUse);
+			$$ = new AST::Variable($1, NULL, inUse);
 		}
 		| listvar T_COMMA T_ID {
-			symtable->addSymbol($3);
-			$$ = new AST::Variable($3, $1);
+			symtable->addSymbol($3, inUse);
+			$$ = new AST::Variable($3, $1, inUse);
 		}
 		;
 
 expr	: const 
 		| T_ID {
 			ST::Symbol* s = symtable->getSymbol($1);
-			$$ = new AST::Variable($1, NULL);
-			$$->type = s->type;
+			$$ = new AST::Variable($1, NULL, s->type);
 		}
-//		| T_ID T_APAR args T_FPAR { }
+		| T_ID T_APAR args T_FPAR {
+			$$ = new AST::FunCall($1, $3); //TODO
+		}
 		| expr T_PLUS expr {
 			$$ = new AST::BinOp($1, plus, $3);
 		}
@@ -183,8 +188,12 @@ const   : T_INT { $$ = new AST::Const($1, Type::_int); }
 		| T_BOOL { $$ = new AST::Const($1, Type::_bool); }
 		;
 
-//TODO implementar
-params	: { $$ = NULL;}
+params	: type T_ID {
+			$$ = new AST::Parameter($2, NULL, $1);
+		}
+		| params T_COMMA type T_ID {
+			$$ = new AST::Parameter($4, $1, $3);
+		}
 		;
 
 cmds	: cmd { 
@@ -195,6 +204,17 @@ cmds	: cmd {
 			if($2 != NULL) $1->nodes.push_back($2);
 		}
 		;
+
+args 	: expr {
+			$$ = new AST::Arguments();
+			$$->arguments.push_back($1);
+		}
+		| args T_COMMA expr {
+			if($3 != NULL) $$->arguments.push_back($3);
+		}
+		| {
+			$$ = new AST::Arguments();
+		}
 
 cmd 	: decl T_ENDL
 		| attr T_ENDL
@@ -209,26 +229,24 @@ attr 	: T_ID T_ATTR expr {
 			if(symbol->symbolType == SymbolType::function) {
 				yyerror("ERROR: using function as variable.");
 			}
-			$$ = new AST::AssignVar(new AST::Variable($1, NULL), $3);
+			$$ = new AST::AssignVar(new AST::Variable($1, NULL, symbol->type), $3);
 		}
 		;
 
-cond	: T_IF T_APAR expr T_FPAR T_ACH newscope cmds endscope T_FCH condelse {
-			$$ = new AST::Conditional($3, $7, $10);
+cond 	: T_IF T_APAR expr T_FPAR ccmds {
+			$$ = new AST::Conditional($3, $5, NULL);
 		}
-		| T_IF T_APAR expr T_FPAR newscope cmd endscope condelse {
-			$$ = new AST::Conditional($3, $6, $8);
+		| T_IF T_APAR expr T_FPAR ccmds T_ELSE ccmds {
+			$$ = new AST::Conditional($3, $5, $7);
 		}
 		;
 
-condelse: T_ELSE cond { 
-			$$ = $2;
+ccmds	: newscope cmd endscope {
+			$$ = new AST::Block(); 
+			$$->nodes.push_back($2);
 		}
-		| T_ELSE T_ACH newscope cmds endscope T_FCH { 
-			$$ = $4;
-		}
-		| { 
-			$$ = NULL; 
+		| T_ACH newscope cmds endscope T_FCH {
+			$$ = $3;
 		}
 
 loop	: T_WHILE T_APAR expr T_FPAR T_ACH newscope cmds endscope T_ACH {

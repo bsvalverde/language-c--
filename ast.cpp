@@ -37,19 +37,27 @@ std::string DeclVar::analyzeTree() {
 }
 
 std::string Par::analyzeTree() {
-	return "";
+	return "Par";
 }
 
 std::string Function::analyzeTree() {
-	return "";
+	return "Function";
+}
+
+std::string Parameter::analyzeTree() {
+	return "Parameter";
 }
 
 std::string FunCall::analyzeTree() {
-	return "";
+	return "FunCall";
+}
+
+std::string Arguments::analyzeTree() {
+	return "Arguments";
 }
 
 std::string Return::analyzeTree() {
-	return "";
+	return "Return";
 }
 
 std::string Conditional::analyzeTree() {
@@ -64,5 +72,5 @@ std::string Conditional::analyzeTree() {
 }
 
 std::string Loop::analyzeTree() {
-	return "";
+	return "Loop";
 }
