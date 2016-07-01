@@ -17,7 +17,6 @@ std::string UnOp::analyzeTree() {
 
 std::string BinOp::analyzeTree() {
 	return "BinOp";
-	//llvmbuilder->buildSum(left, right);
 }
 
 std::string Variable::analyzeTree() {

@@ -1,19 +1,38 @@
 #include "llvmbuilder.h"
 
+llvm::LLVMContext &context = llvm::getGlobalContext();
+llvm::IRBuilder<> Builder(context);
+
 LlvmBuilder::LlvmBuilder() {
 	this->module = new llvm::Module("Intermediary C-- code", context);
 
-	auto res = this->buildDivDouble(this->buildDouble(1.0), this->buildDouble(-2.0));
-	auto _main = this->buildMain(res);
-
-	this->run();
-}
-
-void LlvmBuilder::run() {
+	//testes
+	auto _main = this->buildMain();
 	this->module->dump();
+	this->run(_main);
 }
 
-llvm::Function* LlvmBuilder::buildMain(llvm::Value* _return) {
+void LlvmBuilder::run(llvm::Function* _main) {
+	llvm::ExecutionEngine* engine;
+	std::string error;
+
+	LLVMInitializeNativeTarget();
+
+	engine = llvm::EngineBuilder(this->module).setErrorStr(&error).create();
+
+	if (!engine) {
+		fprintf(stderr, "Could not create engine: %s\n", error.c_str());
+		exit(1);
+    }
+
+     void *mainptr = engine->getPointerToFunction(_main);
+
+    int (*result)() = (int (*)())(intptr_t)mainptr;
+    std::cout << "Result of main = " << result() << std::endl;
+}
+
+//teste
+llvm::Function* LlvmBuilder::buildMain() {
 	llvm::Type* typeint = llvm::Type::getInt32Ty(context);
 	llvm::FunctionType* typemain = llvm::FunctionType::get(typeint, false);
 
@@ -22,11 +41,41 @@ llvm::Function* LlvmBuilder::buildMain(llvm::Value* _return) {
 
 	Builder.SetInsertPoint(mainblock);
 
-	Builder.CreateRet(_return);
+	auto res = this->buildSubInt(this->buildInt(3), this->buildInt(9));
+	auto res2 = this->buildMulInt(this->buildInt(30), this->buildInt(27));
+	auto if_cond = this->buildBool(false);
+
+	// llvm::AllocaInst* var1 = Builder.CreateAlloca(llvm::Type::getInt32Ty(context), NULL, "var1");
+	// Builder.CreateStore(res2, var1);
+	// llvm::Value* retvalue = Builder.CreateLoad(var1, "retvalue");
+
+	auto _if = this->createBasicBlock(_main, "if");
+	auto _else = this->createBasicBlock(_main, "if");
+
+	Builder.SetInsertPoint(_if);
+	Builder.CreateRet(res);
+
+	Builder.SetInsertPoint(_else);
+	Builder.CreateRet(res2);
+
+
+	Builder.SetInsertPoint(mainblock);
+	this->createCondBranch(_if, if_cond, _else);
+	// Builder.CreateRet(res2);
+
+	// Builder.CreateRet(_return);
 
 	// llvm::verifyFunction(*_main);
 
 	return _main;
+}
+
+llvm::BasicBlock* LlvmBuilder::createBasicBlock(llvm::Function* function, std::string name) {
+	return llvm::BasicBlock::Create(context, name, function);
+}
+
+llvm::BranchInst* LlvmBuilder::createCondBranch(llvm::BasicBlock* _if, llvm::Value* cond, llvm::BasicBlock* _else) {
+	return Builder.CreateCondBr(cond, _if, _else);
 }
 
 llvm::Value* LlvmBuilder::buildInt(int value) {
@@ -71,4 +120,16 @@ llvm::Value* LlvmBuilder::buildDivInt(llvm::Value* left, llvm::Value* right) {
 
 llvm::Value* LlvmBuilder::buildDivDouble(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateFDiv(left, right, "double div");
+}
+
+llvm::Value* LlvmBuilder::buildOr(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateOr(left, right, "or");
+}
+
+llvm::Value* LlvmBuilder::buildAnd(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateAnd(left, right, "and");
+}
+
+llvm::Value* LlvmBuilder::buildNot(llvm::Value* left) {
+	return Builder.CreateNot(left, "not");
 }

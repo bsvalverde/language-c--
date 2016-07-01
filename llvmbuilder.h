@@ -1,18 +1,26 @@
 #pragma once
 
+#include <iostream>
+
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/IRBuilder.h"
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 
-static llvm::LLVMContext &context = llvm::getGlobalContext();
-static llvm::IRBuilder<> Builder(context);
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/ExecutionEngine/JIT.h"
+
+#include "llvm/Analysis/Verifier.h"
+
+extern llvm::LLVMContext &context;
+extern llvm::IRBuilder<> Builder;
 
 class LlvmBuilder {
 public:
 	LlvmBuilder();
 
-	llvm::Function* buildMain(llvm::Value* _return);
+	llvm::BasicBlock* createBasicBlock(llvm::Function* function=nullptr, std::string name="");
+	llvm::BranchInst* createCondBranch(llvm::BasicBlock* _if, llvm::Value* cond, llvm::BasicBlock* _else=nullptr);
 	
 	llvm::Value* buildInt(int value);
 	llvm::Value* buildDouble(double value);
@@ -30,11 +38,14 @@ public:
 	llvm::Value* buildDivInt(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildDivDouble(llvm::Value* left, llvm::Value* right);
 
-	// tests only
-	void run();
+	llvm::Value* buildOr(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildAnd(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildNot(llvm::Value* left);
+
+	// testes apenas!
+	llvm::Function* buildMain();
+	void run(llvm::Function* _main);
 private:
 
 	llvm::Module* module;
-	// llvm::IRBuilder<> builder;
-	// llvm::LLVMContext &globalContext;
 };

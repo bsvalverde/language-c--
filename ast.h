@@ -5,8 +5,10 @@
 #include <string>
 
 #include "enums.h"
+#include "llvmbuilder.h"
 
 namespace AST {
+static LlvmBuilder* llvmbuilder  = 0;
 
 class Node;
 

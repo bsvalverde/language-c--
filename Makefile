@@ -1,8 +1,8 @@
 FLEX=flex
 BISON=bison
 CC=clang++
-PARAM=-std=c++11 -fcxx-exceptions -Wno-deprecated-register
-LLVM=`llvm-config --cppflags --ldflags --libs core jit native`
+PARAM=-std=c++11 -fcxx-exceptions -Wno-deprecated-register -pthread -ldl -ltinfo
+LLVM=`llvm-config --cppflags --ldflags --libs core mcjit native`
 # LLVMLIB=`llvm-config --ldflags --libs core native` 
 # LLVMPARAM=`llvm-config --cppflags`
 OUTPUT=c--
