@@ -13,12 +13,27 @@ public:
 	LlvmBuilder();
 
 	llvm::Function* buildMain(llvm::Value* _return);
+	
 	llvm::Value* buildInt(int value);
+	llvm::Value* buildDouble(double value);
+	llvm::Value* buildBool(bool value);
+
 	llvm::Value* buildSumInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildSumDouble(llvm::Value* left, llvm::Value* right);
+
+	llvm::Value* buildSubInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildSubDouble(llvm::Value* left, llvm::Value* right);
+
+	llvm::Value* buildMulInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildMulDouble(llvm::Value* left, llvm::Value* right);
+
+	llvm::Value* buildDivInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildDivDouble(llvm::Value* left, llvm::Value* right);
 
 	// tests only
 	void run();
 private:
+
 	llvm::Module* module;
 	// llvm::IRBuilder<> builder;
 	// llvm::LLVMContext &globalContext;
