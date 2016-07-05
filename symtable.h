@@ -15,16 +15,13 @@ class Symbol;
 class SymTable {
 public:
 	SymTable(SymTable* superScope);
-	//TODO separar add e get variable e function
-	Symbol* addSymbol(std::string name, Type type);
-	Symbol* getSymbol(std::string name);
 
 	Symbol* addVariable(std::string name, Type type);
 	Symbol* getVariable(std::string name);
 
-	Symbol* addFunction(std::string name, Type type);
-	Symbol* getFunction(std::string name);
-private:
+	Symbol* addFunction(std::string name, Type type, std::list<Symbol*> parameters);
+	Symbol* getFunction(std::string name, int argNo);
+//private:
 	bool hasSymbol(std::string name);
 
 	std::map<std::string, Symbol*> table;
@@ -39,7 +36,6 @@ public:
 
 	std::string name;
 	Type type;
-	//TYPE?! RENOMEAR TODO
 	Kind kind;
 };
 
@@ -48,16 +44,16 @@ public:
 	Variable(std::string name);
 
 private:
-	AST::Node* lastModification;
+	//AST::Node* lastModification;
 };
 
 class Function : public Symbol {
 public:
-	Function(std::string name);
+	Function(std::string name, std::list<Symbol*> parameters);
 
-private:
-	//TODO ter uma lista de simbolos representando os parametros da funcao?
-	AST::Block* code;
+//private:
+	std::list<Symbol*> parameters;
+	//AST::Block* code;
 };
 
 }

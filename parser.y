@@ -94,9 +94,15 @@ decl	: type listvar {
 		}
 		;
 
-fun 	: type T_ID T_APAR params T_FPAR T_ACH newscope cmds endscope T_FCH {
-			AST::Function* function = new AST::Function($2, $4, $8, $1);
-			$$ = function;
+fun 	: type T_ID T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
+			AST::Parameter* par = (AST::Parameter*)$5;
+			std::list<ST::Symbol*> parameters;
+			while(par != NULL){
+				parameters.push_front(symtable->addVariable(par->name, par->type));
+				par = (AST::Parameter*)par->next;
+			}
+			symtable->addFunction($2, $1, parameters);
+			$$ = new AST::Function($2, $5, $8, $1);
 		}
 		;
 
@@ -130,11 +136,12 @@ listvar	: T_ID {
 
 expr	: const 
 		| T_ID {
-			ST::Symbol* s = symtable->getSymbol($1);
+			ST::Symbol* s = symtable->getVariable($1);
 			$$ = new AST::Variable($1, NULL, s->type);
 		}
 		| T_ID T_APAR args T_FPAR {
-			$$ = new AST::FunCall($1, $3); //TODO
+			ST::Symbol* s = symtable->getFunction($1, $3->arguments.size());
+			$$ = new AST::FunCall($1, $3, s->type);
 		}
 		| expr T_PLUS expr {
 			$$ = new AST::BinOp($1, plus, $3);
@@ -194,6 +201,9 @@ params	: type T_ID {
 		| params T_COMMA type T_ID {
 			$$ = new AST::Parameter($4, $1, $3);
 		}
+		| {
+			$$ = NULL;
+		}
 		;
 
 cmds	: cmd { 
@@ -225,10 +235,7 @@ cmd 	: decl T_ENDL
 		;
 
 attr 	: T_ID T_ATTR expr {
-			ST::Symbol* symbol = symtable->getSymbol($1);
-			// if(symbol->symbolType == SymbolType::function) {
-			// 	yyerror("ERROR: using function as variable.");
-			// }
+			ST::Symbol* symbol = symtable->getVariable($1);
 			$$ = new AST::AssignVar(new AST::Variable($1, NULL, symbol->type), $3);
 		}
 		;
@@ -255,11 +262,15 @@ loop	: T_WHILE T_APAR expr T_FPAR T_ACH newscope cmds endscope T_ACH {
 		;
 
 newscope: {
+			symtable = new ST::SymTable(symtable);
 			$$ = NULL;
 		}
 		;
 
 endscope: {
+			ST::SymTable oldtable = symtable;
+			symtable = symtable->superScope;
+			//??delete oldtable;
 			$$ = NULL;
 		}
 		;

@@ -5,10 +5,10 @@
 #include <string>
 
 #include "enums.h"
-#include "llvmbuilder.h"
+//#include "llvmbuilder.h"
 
 namespace AST {
-static LlvmBuilder* llvmbuilder  = 0;
+//static LlvmBuilder* llvmbuilder  = 0;
 
 class Node;
 
@@ -105,7 +105,7 @@ class FunCall : public Node {
 public:
 	std::string name;
 	Node* args;
-	FunCall(std::string name, Node* args) : name(name), args(args) { this->type = Type::desconhecido; }
+	FunCall(std::string name, Node* args, Type type) : name(name), args(args) { this->type = type; }
 	std::string analyzeTree();
 };
 

@@ -6,35 +6,16 @@ SymTable::SymTable(SymTable* superScope) {
 	this->superScope = superScope;
 }
 
-//TODO precisa retornar alguma coisa?
-Symbol* SymTable::addSymbol(std::string name, Type type) {
-	//TODO e se addSymbol entrar no if e não adicionar?
-	if(hasSymbol(name)) {
-		yyerror("ERROR: Variable %s previously declared.", name.c_str());
-		//TODO o que retornar nesse caso?
-		return new Symbol(name);
-	}
-	this->table[name] = new Symbol(name);
-	this->table[name]->type = type;
-	return this->table[name];
-}
-
-Symbol* SymTable::getSymbol(std::string name) {
-	if(hasSymbol(name)) {
-		return this->table[name];
-	}
-	if(this->superScope == NULL) {
-		yyerror("ERROR: Unknown variable %s.", name.c_str());
-		//TODO o que retornar nesse caso?
-		return new Symbol(name);
-	} else {
-		return this->superScope->getSymbol(name);
-	}
-}
-
 Symbol* SymTable::addVariable(std::string name, Type type) {
 	if(hasSymbol(name)) {
-		yyerror("ERROR: Variable %s previously declared.", name.c_str());
+		Symbol* sym = this->table[name];
+		if(sym->kind != Kind::variable){
+			yyerror("semântico: variável %s previamente declarada como função.", name.c_str());
+		} else if (sym->type != type){
+			yyerror("semântico: variável %s previamente declarada com outro tipo.", name.c_str());
+		} else {
+			yyerror("semântico: redeclaração da variável %s.", name.c_str());
+		}
 		return new Symbol(name);
 	}
 	this->table[name] = new Variable(name);
@@ -44,37 +25,53 @@ Symbol* SymTable::addVariable(std::string name, Type type) {
 
 Symbol* SymTable::getVariable(std::string name) {
 	if(hasSymbol(name)) {
-		return this->table[name];
+		Symbol* sym = this->table[name];
+		if(sym->kind != Kind::variable) {
+			yyerror("semântico: uso da função %s como variável.", name.c_str());
+		}
+		return sym;
 	}
 	if(this->superScope == NULL) {
-		yyerror("ERROR: Unknown variable %s.", name.c_str());
+		yyerror("semântico: variável %s não foi declarada neste escopo.", name.c_str());
 		return new Symbol(name);
 	} else {
-		return this->superScope->getSymbol(name);
+		return this->superScope->getVariable(name);
 	}
 }
 
-Symbol* SymTable::addFunction(std::string name, Type type) {
+Symbol* SymTable::addFunction(std::string name, Type type, std::list<Symbol*> parameters) {
 	if(hasSymbol(name)) {
-		yyerror("ERROR: Variable %s previously declared.", name.c_str());
+		Symbol* sym = this->table[name];
+		if(sym->kind != Kind::function){
+			yyerror("semântico: função %s previamente declarada como variável.", name.c_str());
+		} else {
+			yyerror("semântico: redeclaração da função %s.", name.c_str());
+		}
 		return new Symbol(name);
 	}
-	this->table[name] = new Function(name);
+	this->table[name] = new Function(name, parameters);
 	this->table[name]->type = type;
 	return this->table[name];
 }
 
-Symbol* SymTable::getFunction(std::string name) {
-	//TODO
-	SymTable* global = this;
-	while(global->superScope != NULL){
-		global = global->superScope;
-	}
+Symbol* SymTable::getFunction(std::string name, int argNo) {
 	if(hasSymbol(name)) {
-		return this->table[name];
+		Symbol* sym = this->table[name];
+		if(sym->kind != Kind::function) {
+			yyerror("semântico: uso da variável %s como função.", name.c_str());
+		} else if(argNo < ((Function*)sym)->parameters.size()){
+			yyerror("semântico: função %s chamada com poucos argumentos.", name.c_str());
+		} else if(argNo > ((Function*)sym)->parameters.size()){
+			yyerror("semântico: função %s chamada com muitos argumentos.", name.c_str());
+		}
+		return sym;
 	}
-	yyerror("ERROR: Unknown variable %s.", name.c_str());
-	return new Symbol(name);
+	if(this->superScope == NULL) {
+		yyerror("semântico: função %s não foi declarada neste escopo.", name.c_str());
+		return new Symbol(name);
+	} else {
+		return this->superScope->getFunction(name, argNo);
+	}
 }
 
 bool SymTable::hasSymbol(std::string name) {
@@ -85,6 +82,6 @@ Variable::Variable(std::string name) : Symbol(name) {
 	this->kind = Kind::variable;
 }
 
-Function::Function(std::string name) : Symbol(name) {
+Function::Function(std::string name, std::list<Symbol*> parameters) : Symbol(name), parameters(parameters) {
 	this->kind = Kind::function;
 }

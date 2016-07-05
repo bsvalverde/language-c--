@@ -167,14 +167,18 @@ std::string Par::analyzeTree() {
 }
 
 std::string Function::analyzeTree() {
-	//TODO
-	// FT::Function* fun = funtable->getFunction(this->funName);
-	// std::string retorno = "Declaracao de funcao " + Stringfier::typeStringF(fun->returnType) + ": " + this->funName + "\n";
-
-	// retorno += this->parameters->analyzeTree();
-	// retorno += "Fim declaracao";
-	// return retorno;
-	return "";
+	std::string retorno = "Declaracao de funcao " + Stringfier::typeStringF(this->type) + ": " + this->name + "\n";
+	retorno += "Parametros: ";
+	Parameter* par = (Parameter*)this->params;
+	std::string params = "";
+	while(par != NULL){
+		params = par->analyzeTree() + ", " + params;
+		par = (Parameter*)par->next;
+	}
+	retorno += params + "\n";
+	retorno += code->analyzeTree();
+	retorno += "Fim declaracao";
+	return retorno;
 }
 
 std::string Parameter::analyzeTree(){
