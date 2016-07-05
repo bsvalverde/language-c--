@@ -8,7 +8,7 @@ enum Type {
 	_void
 };
 
-enum SymbolType {
+enum Kind {
 	undefined,
 	function,
 	variable

@@ -15,8 +15,15 @@ class Symbol;
 class SymTable {
 public:
 	SymTable(SymTable* superScope);
+	//TODO separar add e get variable e function
 	Symbol* addSymbol(std::string name, Type type);
 	Symbol* getSymbol(std::string name);
+
+	Symbol* addVariable(std::string name, Type type);
+	Symbol* getVariable(std::string name);
+
+	Symbol* addFunction(std::string name, Type type);
+	Symbol* getFunction(std::string name);
 private:
 	bool hasSymbol(std::string name);
 
@@ -26,14 +33,14 @@ private:
 
 class Symbol {
 public:
-	Symbol(std::string name, SymbolType symbolType=SymbolType::undefined) { }
-	Symbol(std::string name, Type type, SymbolType symbolType=SymbolType::undefined) : name(name), type(type) { }
+	Symbol(std::string name, Kind kind=Kind::undefined) { }
+	Symbol(std::string name, Type type, Kind kind=Kind::undefined) : name(name), type(type) { }
 	void setType(Type type);
 
 	std::string name;
 	Type type;
 	//TYPE?! RENOMEAR TODO
-	SymbolType symbolType;
+	Kind kind;
 };
 
 class Variable : public Symbol {

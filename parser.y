@@ -88,7 +88,7 @@ decl	: type listvar {
 			$$ = new AST::DeclVar($2);
 		}
 		| type T_ID T_ATTR expr {
-			ST::Symbol* s = symtable->addSymbol($2, $1);
+			ST::Symbol* s = symtable->addVariable($2, $1);
 			AST::Variable* var = new AST::Variable($2, NULL, $1);
 			$$ = new AST::AssignVar(var, $4);
 		}
@@ -119,11 +119,11 @@ type 	: T_DINT {
 		;
 
 listvar	: T_ID {
-			symtable->addSymbol($1, inUse);
+			symtable->addVariable($1, inUse);
 			$$ = new AST::Variable($1, NULL, inUse);
 		}
 		| listvar T_COMMA T_ID {
-			symtable->addSymbol($3, inUse);
+			symtable->addVariable($3, inUse);
 			$$ = new AST::Variable($3, $1, inUse);
 		}
 		;
@@ -226,9 +226,9 @@ cmd 	: decl T_ENDL
 
 attr 	: T_ID T_ATTR expr {
 			ST::Symbol* symbol = symtable->getSymbol($1);
-			if(symbol->symbolType == SymbolType::function) {
-				yyerror("ERROR: using function as variable.");
-			}
+			// if(symbol->symbolType == SymbolType::function) {
+			// 	yyerror("ERROR: using function as variable.");
+			// }
 			$$ = new AST::AssignVar(new AST::Variable($1, NULL, symbol->type), $3);
 		}
 		;
