@@ -1,227 +1,144 @@
-// #include "ast.h"
-
-// using namespace AST;
-
-// std::string Block::analyzeTree() {
-// 	std::string retorno = "";
-// 	for(Node* node : nodes) {
-// 		if(node != NULL)
-// 			retorno += node->analyzeTree() + "\n";
-// 	}
-// 	return retorno;
-// }
-
-// std::string UnOp::analyzeTree() {
-// 	return "UnOp";
-// }
-
-// std::string BinOp::analyzeTree() {
-// 	return "BinOp";
-// }
-
-// std::string Variable::analyzeTree() {
-// 	return "Variable";
-// }
-
-// std::string Const::analyzeTree() {
-// 	return "Const";
-// }
-
-// std::string AssignVar::analyzeTree() {
-// 	return "AssignVar";
-// }
-
-// std::string DeclVar::analyzeTree() {
-// 	return "DeclVar";
-// }
-
-// std::string Par::analyzeTree() {
-// 	return "Par";
-// }
-
-// std::string Function::analyzeTree() {
-// 	return "Function";
-// }
-
-// std::string Parameter::analyzeTree() {
-// 	return "Parameter";
-// }
-
-// std::string FunCall::analyzeTree() {
-// 	return "FunCall";
-// }
-
-// std::string Arguments::analyzeTree() {
-// 	return "Arguments";
-// }
-
-// std::string Return::analyzeTree() {
-// 	return "Return";
-// }
-
-// std::string Conditional::analyzeTree() {
-// 	printf("entrando no cond");
-// 	std::string retorno = "Expressao condicional";
-// 	retorno += "\nIF:\n" + this->condition->analyzeTree();
-// 	retorno += "\nTHEN:\n" + this->then->analyzeTree();
-// 	if(this->_else != NULL){
-// 		retorno += "ELSE:\n" + this->_else->analyzeTree();
-// 	}
-// 	return retorno;
-// }
-
-// std::string Loop::analyzeTree() {
-// 	return "Loop";
-// }
-
 #include "ast.h"
-#include "stringfier.h"
 
 using namespace AST;
 
-std::string Block::analyzeTree() {
-	std::string retorno = "";
+
+llvm::Value* Block::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Block " << std::endl;
 	for(Node* node : nodes) {
 		if(node != NULL)
-			retorno += node->analyzeTree() + "\n";
+			node->analyzeTree(llvmbuilder);
 	}
-	return retorno;
+
+	return nullptr;
 }
 
-std::string UnOp::analyzeTree() {
-	std::string retorno = "";
-	retorno = next->analyzeTree() + ")";
-	retorno = "((" + Stringfier::unOpString(op) + " " + Stringfier::typeStringM(next->type) + ") " + retorno;
-	this->type = next->type;
-	return retorno;
+llvm::Value* UnOp::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "UnOP" << std::endl;
+	return nullptr;
 }
 
-std::string BinOp::analyzeTree() {
-	std::string retorno, lvalue, rvalue;
-	retorno = "";
-	lvalue = left->analyzeTree();
-	rvalue = right->analyzeTree();
-	std::string opString = Stringfier::binOpString(op);
-	if (left->type != right->type){
-		if(left->type == Type::_int && right->type == Type::_double){
-			lvalue += " para real";
-		} else if (left->type == Type::_double && right->type == Type::_int){
-			rvalue += " para real";
-		}
-	}
-    switch(op){
-	case plus: case sub: case mult: case _div:
-		retorno = "(" + lvalue + " (" + opString + " " + Stringfier::typeStringF(this->type) + ") " + rvalue + ")";
-		break;
+llvm::Value* BinOp::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "BinOp" << std::endl;
+	llvm::Value* lvalue = left->analyzeTree(llvmbuilder);
+	llvm::Value* rvalue = right->analyzeTree(llvmbuilder);
+
+	switch(op) {
+	case plus:
+		return llvmbuilder->buildSumInt(lvalue, rvalue);
+	case sub:
+		return llvmbuilder->buildSubInt(lvalue, rvalue);
+	case mult:
+		return llvmbuilder->buildMulInt(lvalue, rvalue);
+	case _div:
+		return llvmbuilder->buildDivInt(lvalue, rvalue);
 	case gt: case lt: case gte: case lte: case eq: case neq:
-		retorno = "(" + lvalue + " (" + opString + " " + Stringfier::typeStringM(this->type) + ") " + rvalue + ")";
-		break;
-	case _and: case _or:
-		retorno = "(" + lvalue + " (" + opString + " " + Stringfier::typeStringM(this->type) + ") " + rvalue + ")";
-		break;
-    }
-    return retorno;
-}
-
-std::string Variable::analyzeTree() {
-	std::string retorno = "variavel " + Stringfier::typeStringF(this->type) + " " + this->name;
-	return retorno;
-}
-
-std::string Const::analyzeTree() {
-	std::string retorno = "valor " + Stringfier::typeStringM(this->type) + " " + this->value;
-	return retorno;
-}
-
-std::string AssignVar::analyzeTree() {
-	std::string retorno, lvalue, rvalue;
-	retorno = "";
-	lvalue = var->analyzeTree();
-	rvalue = value->analyzeTree();
-	if (var->type != value->type && var->type == Type::_double && value->type == Type::_int){
-		rvalue += " para real";
+		return nullptr;
+	case _and: 
+		return llvmbuilder->buildAnd(lvalue, rvalue);
+	case _or:
+		return llvmbuilder->buildOr(lvalue, rvalue);
 	}
-	return "Atribuicao de valor para " + lvalue + ": " + rvalue;;
 }
 
-std::string DeclVar::analyzeTree() {
-	std::string retorno = "";
+llvm::Value* Variable::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Variable" << std::endl;
+	return this->inst;
+	//if(ja foi inicializado) {
+		//faz algo
+	// } else { //é um decl
+		// return nullptr; //TODO
+	// }
+}
+
+llvm::Value* Const::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Const" << std::endl;
+	switch(type) {
+	case _int:
+		return llvmbuilder->buildInt(atoi(value.c_str()));
+	case _double:
+		return llvmbuilder->buildDouble(atof(value.c_str()));
+	case _bool:
+		return llvmbuilder->buildBool(value != "0");
+	case _void: case desconhecido:
+		return nullptr; // Nunca deve chegar aqui
+	}
+}
+
+llvm::Value* AssignVar::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "AssignVar" << std::endl;
 	
-	Variable* next = (Variable *)this->next;
-	retorno = "Declaracao de variavel " + Stringfier::typeStringF(next->type);
-	retorno += ": ";
+	// std::string varName = ((Variable*) var)->name;
+	llvm::Value* lvalue = var->analyzeTree(llvmbuilder);
+	llvm::Value* rvalue = value->analyzeTree(llvmbuilder);
+	llvmbuilder->setVariable(rvalue, (llvm::AllocaInst*) lvalue);
+		
+	std::cout << "AssignVarfdsfd " << lvalue << std::endl;
+
+	return nullptr;
+}
+
+llvm::Value* DeclVar::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "DeclVar" << std::endl;
+
+	std::string varName = ((Variable*) next)->name;
+	((Variable*) next)->inst = llvmbuilder->storeVariable(varName, nullptr);
+
 	
-	std::string vars = next->name;
-	next = (Variable *)next->next;
-	while(next != NULL){
-		vars = next->name + ", " + vars;
-		next = (Variable *)next->next;
-	}
-	retorno += vars;
-	return retorno;
+
+	return nullptr;
 }
 
-std::string Par::analyzeTree() {
-	std::string retorno = "((abre parenteses) " + this->content->analyzeTree() + " (fecha parenteses))";
-	return retorno;
+llvm::Value* Par::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Par" << std::endl;
+	return nullptr;
 }
 
-std::string Function::analyzeTree() {
-	std::string retorno = "Declaracao de funcao " + Stringfier::typeStringF(this->type) + ": " + this->name + "\n";
-	retorno += "Parametros: ";
-	Parameter* par = (Parameter*)this->params;
-	std::string params = "";
-	while(par != NULL){
-		params = par->analyzeTree() + ", " + params;
-		par = (Parameter*)par->next;
-	}
-	retorno += params + "\n";
-	retorno += code->analyzeTree();
-	retorno += "Fim declaracao";
-	return retorno;
+llvm::Value* Function::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Function " << std::endl;
+	llvm::Function* function = llvmbuilder->createFunction(this->name);
+	this->functionBB = llvmbuilder->createBasicBlock(function, this->name+"BB");
+	llvmbuilder->setInsertPoint(this->functionBB);
+
+	code->analyzeTree(llvmbuilder);
+
+	return function;
 }
 
-std::string Parameter::analyzeTree(){
-	std::string retorno = "parametro " + Stringfier::typeStringM(this->type) + " " + this->name;
-	return retorno;
+llvm::Value* Parameter::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Parameter" << std::endl;
+	return nullptr;
 }
 
-std::string FunCall::analyzeTree() {
-	std::string retorno = "chamada de funcao " + Stringfier::typeStringF(this->type) + " " + this->name;
-	retorno += " " + args->analyzeTree();
-	return retorno;
+llvm::Value* FunCall::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "FunCall" << std::endl;
+	return nullptr;
 }
 
-std::string Arguments::analyzeTree(){
-	std::string retorno = "{+parametros: ";
-	for(Node* node : arguments) {
-		if(node != NULL)
-			retorno += ", " + node->analyzeTree() + "\n";
-	}
-	retorno += "}";
-	return retorno;
+llvm::Value* Arguments::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Arguments" << std::endl;
+	return nullptr;
 }
 
-std::string Return::analyzeTree() {
-	return "Retorno de funcao: " + this->expr->analyzeTree();
+llvm::Value* Return::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Return" << std::endl;
+	return nullptr;
 }
 
-std::string Conditional::analyzeTree() {
-	std::string retorno = "Expressao condicional";
-	retorno += "\n+se:\n" + this->condition->analyzeTree();
-	retorno += "\n+entao:\n" + this->then->analyzeTree();
-	if(this->_else != NULL){
-		retorno += "+senao:\n" + this->_else->analyzeTree();
-	}
-	retorno += "Fim expressao condicional";
-	return retorno;
+llvm::Value* Conditional::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Conditional" << std::endl;
+	// printf("entrando no cond");
+	// std::string retorno = "Expressao condicional";
+	// retorno += "\nIF:\n" + this->condition->analyzeTree(llvmbuilder);
+	// retorno += "\nTHEN:\n" + this->then->analyzeTree(llvmbuilder);
+	// if(this->_else != NULL){
+	// 	retorno += "ELSE:\n" + this->_else->analyzeTree(llvmbuilder);
+	// }
+	// return retorno;
+	return nullptr;
 }
 
-std::string Loop::analyzeTree() {
-	std::string retorno = "+enquanto: ";
-	retorno += this->condition->analyzeTree();
-	retorno += "\n+faca:\n";
-	retorno += this->loopBlock->analyzeTree();
-	retorno += "Fim laco";
-	return retorno;
+llvm::Value* Loop::analyzeTree(LlvmBuilder* llvmbuilder) {
+	std::cout << "Loop" << std::endl;
+	return nullptr;
 }

@@ -37,6 +37,8 @@ public:
 	std::string name;
 	Type type;
 	Kind kind;
+
+	llvm::AllocaInst* inst;
 };
 
 class Variable : public Symbol {

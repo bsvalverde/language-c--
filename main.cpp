@@ -10,14 +10,19 @@ extern int yydebug;
 int main(int argc, char **argv)
 {
 	// if(AST::llvmbuilder == 0) {
-	// 	AST::llvmbuilder = new LlvmBuilder();
+		// AST::llvmbuilder = new LlvmBuilder();
 	// }
+
+    LlvmBuilder* llvmbuilder = new LlvmBuilder();
 
     //yydebug = 1;
     yyparse();
     //root->analyzeTree(); 
     std::cout << std::endl;
-    std::cout << root->analyzeTree();
+    root->analyzeTree(llvmbuilder);
     std::cout << std::endl;
+
+    llvmbuilder->dump();
+
     return 0;
 }
