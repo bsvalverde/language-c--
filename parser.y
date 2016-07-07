@@ -109,7 +109,7 @@ fun 	: type T_ID T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
 type 	: T_DINT {
 			inUse = Type::_int;
 			$$ = Type::_int;
-		 }
+		}
 		| T_DREAL {
 			inUse = Type::_double;
 			$$ = Type::_double;

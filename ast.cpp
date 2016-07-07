@@ -116,7 +116,8 @@ llvm::Value* DeclVar::analyzeTree(LlvmBuilder* llvmbuilder) {
 
 llvm::Value* Par::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Par" << std::endl;
-	return nullptr;
+
+	return this->content->analyzeTree(llvmbuilder);
 }
 
 llvm::Value* Function::analyzeTree(LlvmBuilder* llvmbuilder) {
