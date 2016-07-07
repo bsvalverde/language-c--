@@ -69,8 +69,14 @@ llvm::Value* AssignVar::analyzeTree(LlvmBuilder* llvmbuilder) {
 }
 
 llvm::Value* DeclVar::analyzeTree(LlvmBuilder* llvmbuilder) {
-	std::string varName = ((Variable*) next)->name;
-	this->parentST->getVariable(((Variable*) next)->name)->inst = llvmbuilder->storeVariable(varName, nullptr);
+	while(next) {
+		Variable* var = ((Variable*) next);
+		
+		std::string varName = var->name;
+		this->parentST->getVariable(var->name)->inst = llvmbuilder->storeVariable(varName, nullptr);	
+
+		next = var->next;
+	}
 
 	return nullptr;
 }
