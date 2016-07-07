@@ -127,6 +127,10 @@ void LlvmBuilder::setInsertPoint(llvm::BasicBlock* block) {
 	Builder.SetInsertPoint(block);
 }
 
+llvm::BasicBlock* LlvmBuilder::getCurrentBasicBlock() {
+	return Builder.GetInsertBlock();
+}
+
 llvm::BranchInst* LlvmBuilder::createCondBranch(llvm::BasicBlock* _if, llvm::Value* cond, llvm::BasicBlock* _else) {
 	return Builder.CreateCondBr(cond, _if, _else);
 }
@@ -185,4 +189,28 @@ llvm::Value* LlvmBuilder::buildAnd(llvm::Value* left, llvm::Value* right) {
 
 llvm::Value* LlvmBuilder::buildNot(llvm::Value* left) {
 	return Builder.CreateNot(left, "not");
+}
+
+llvm::Value* LlvmBuilder::buildEqInt(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateICmpEQ(left, right, "eq int");
+}
+
+llvm::Value* LlvmBuilder::buildNeInt(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateICmpNE(left, right, "ne int");
+}
+
+llvm::Value* LlvmBuilder::buildGtInt(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateICmpSGT(left, right, "gt int");
+}
+
+llvm::Value* LlvmBuilder::buildGeInt(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateICmpSGE(left, right, "ge int");
+}
+
+llvm::Value* LlvmBuilder::buildLtInt(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateICmpSLT(left, right, "lt int");
+}
+
+llvm::Value* LlvmBuilder::buildLeInt(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateICmpSLE(left, right, "le int");
 }

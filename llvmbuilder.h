@@ -28,6 +28,7 @@ public:
 	llvm::BranchInst* createCondBranch(llvm::BasicBlock* _if, llvm::Value* cond, llvm::BasicBlock* _else=nullptr);
 
 	void setInsertPoint(llvm::BasicBlock* block);
+	llvm::BasicBlock* getCurrentBasicBlock();
 	
 	llvm::Value* buildInt(int value);
 	llvm::Value* buildDouble(double value);
@@ -48,6 +49,13 @@ public:
 	llvm::Value* buildOr(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildAnd(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildNot(llvm::Value* left);
+
+	llvm::Value* buildEqInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildNeInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildGtInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildGeInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildLtInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildLeInt(llvm::Value* left, llvm::Value* right);
 
 	// testes apenas!
 	llvm::Function* buildMain();

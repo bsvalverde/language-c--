@@ -33,8 +33,18 @@ llvm::Value* BinOp::analyzeTree(LlvmBuilder* llvmbuilder) {
 		return llvmbuilder->buildMulInt(lvalue, rvalue);
 	case _div:
 		return llvmbuilder->buildDivInt(lvalue, rvalue);
-	case gt: case lt: case gte: case lte: case eq: case neq:
-		return nullptr;
+	case gt: 
+		return llvmbuilder->buildGtInt(lvalue, rvalue);
+	case lt: 
+		return llvmbuilder->buildLtInt(lvalue, rvalue);
+	case gte: 
+		return llvmbuilder->buildGeInt(lvalue, rvalue);
+	case lte: 
+		return llvmbuilder->buildLeInt(lvalue, rvalue);
+	case eq: 
+		return llvmbuilder->buildEqInt(lvalue, rvalue);
+	case neq:
+		return llvmbuilder->buildNeInt(lvalue, rvalue);
 	case _and: 
 		return llvmbuilder->buildAnd(lvalue, rvalue);
 	case _or:
@@ -45,8 +55,6 @@ llvm::Value* BinOp::analyzeTree(LlvmBuilder* llvmbuilder) {
 llvm::Value* Variable::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Variable" << std::endl;
 	llvm::AllocaInst* inst = this->parentST->getVariable(this->name)->inst;
-
-	std::cout << "DFSD !" << inst << std::endl;
 
 	return llvmbuilder->loadVariable(this->name, inst);
 }
@@ -134,6 +142,25 @@ llvm::Value* Return::analyzeTree(LlvmBuilder* llvmbuilder) {
 
 llvm::Value* Conditional::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Conditional" << std::endl;
+
+	llvm::Value* cond = this->condition->analyzeTree(llvmbuilder);
+
+	llvm::BasicBlock* ip = llvmbuilder->getCurrentBasicBlock();
+
+	llvm::BasicBlock* _if = llvmbuilder->createBasicBlock(ip->getParent(), "if");
+	llvm::BasicBlock* _else = llvmbuilder->createBasicBlock(ip->getParent(), "else");
+
+	llvmbuilder->setInsertPoint(_if);
+	this->then->analyzeTree(llvmbuilder);
+
+	if(this->_else) {
+		llvmbuilder->setInsertPoint(_else);
+		this->_else->analyzeTree(llvmbuilder);
+	}
+
+	llvmbuilder->setInsertPoint(ip);
+	return llvmbuilder->createCondBranch(_if, cond, _else);
+
 	// printf("entrando no cond");
 	// std::string retorno = "Expressao condicional";
 	// retorno += "\nIF:\n" + this->condition->analyzeTree(llvmbuilder);
@@ -142,7 +169,6 @@ llvm::Value* Conditional::analyzeTree(LlvmBuilder* llvmbuilder) {
 	// 	retorno += "ELSE:\n" + this->_else->analyzeTree(llvmbuilder);
 	// }
 	// return retorno;
-	return nullptr;
 }
 
 llvm::Value* Loop::analyzeTree(LlvmBuilder* llvmbuilder) {
