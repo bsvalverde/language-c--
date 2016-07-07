@@ -1,9 +1,11 @@
 /* Symbol Table */
 #pragma once
 
+#include <list>
 #include <map>
 
-#include "ast.h"
+#include "llvm/IR/Instructions.h"
+
 #include "enums.h"
 
 extern void yyerror(const char* s, ...);

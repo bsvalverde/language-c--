@@ -2,7 +2,7 @@
 #include <string>
 
 #include "ast.h"
-#include "symtable.h"
+// #include "symtable.h"
 
 AST::Block* root;
 ST::SymTable* symtable = new ST::SymTable(NULL);
@@ -85,12 +85,12 @@ global  : decl T_ENDL
 		;
 
 decl	: type listvar {
-			$$ = new AST::DeclVar($2);
+			$$ = new AST::DeclVar($2, symtable);
 		}
 		| type T_ID T_ATTR expr {
 			ST::Symbol* s = symtable->addVariable($2, $1);
-			AST::Variable* var = new AST::Variable($2, NULL, $1);
-			$$ = new AST::AssignVar(var, $4);
+			AST::Variable* var = new AST::Variable($2, NULL, $1, symtable);
+			$$ = new AST::AssignVar(var, $4, symtable);
 		}
 		;
 
@@ -126,18 +126,18 @@ type 	: T_DINT {
 
 listvar	: T_ID {
 			symtable->addVariable($1, inUse);
-			$$ = new AST::Variable($1, NULL, inUse);
+			$$ = new AST::Variable($1, NULL, inUse, symtable);
 		}
 		| listvar T_COMMA T_ID {
 			symtable->addVariable($3, inUse);
-			$$ = new AST::Variable($3, $1, inUse);
+			$$ = new AST::Variable($3, $1, inUse, symtable);
 		}
 		;
 
 expr	: const 
 		| T_ID {
 			ST::Symbol* s = symtable->getVariable($1);
-			$$ = new AST::Variable($1, NULL, s->type);
+			$$ = new AST::Variable($1, NULL, s->type, symtable);
 		}
 		| T_ID T_APAR args T_FPAR {
 			ST::Symbol* s = symtable->getFunction($1, $3->arguments.size());
@@ -236,7 +236,7 @@ cmd 	: decl T_ENDL
 
 attr 	: T_ID T_ATTR expr {
 			ST::Symbol* symbol = symtable->getVariable($1);
-			$$ = new AST::AssignVar(new AST::Variable($1, NULL, symbol->type), $3);
+			$$ = new AST::AssignVar(new AST::Variable($1, NULL, symbol->type, symtable), $3, symtable);
 		}
 		;
 

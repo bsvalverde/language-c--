@@ -5,12 +5,15 @@
 #include <stdlib.h> 
 #include <string>
 
-#include "enums.h"
-#include "llvmbuilder.h"
 #include "llvm/IR/BasicBlock.h"
 
+#include "enums.h"
+#include "llvmbuilder.h"
+#include "symtable.h"
+
+// extern ST::SymTable* symtable;
+
 namespace AST {
-// static LlvmBuilder* llvmbuilder = 0;
 
 class Node;
 
@@ -19,7 +22,6 @@ typedef std::list<Node*> NodeList;
 class Node { //nodo generalizado
 public:
     virtual ~Node() {}
-    // virtual std::string analyzeTree() { return ""; }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder) { return nullptr; }
     Type type;
 };
@@ -28,7 +30,6 @@ class Block : public Node {
 public:
 	NodeList nodes;
 	Block() { }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -37,7 +38,6 @@ public:
 	UnOperation op;
 	Node* next;
 	UnOp(UnOperation op, Node* next) : op(op), next(next) { this->type = next->type; }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -49,7 +49,6 @@ public:
 	BinOp(Node* left, BinOperation op, Node* right) : left(left), op(op), right(right) {
 		this->type = Type::desconhecido;
 	}
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -57,9 +56,8 @@ class Variable : public Node {
 public:
 	std::string name;
 	Node* next;
-	llvm::AllocaInst* inst;
-	Variable(std::string name, Node* next, Type type) : name(name), next(next) { this->type = type; }
-	// std::string analyzeTree();
+	ST::SymTable* parentST;
+	Variable(std::string name, Node* next, Type type, ST::SymTable* parentST) : name(name), next(next), parentST(parentST) { this->type = type; }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -67,7 +65,6 @@ class Const : public Node { //nodo utilizado no uso de valores constantes (1, .1
 public:
 	std::string value;
 	Const(std::string value, Type type) : value(value) { this->type = type; }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -75,16 +72,16 @@ class AssignVar : public Node { //nodo utilizado na atribuição de variáveis. 
 public:
 	Node* var;
 	Node* value;
-	AssignVar(Node* var, Node* value) : var(var), value(value) { }
-	// std::string analyzeTree();
+	ST::SymTable* parentST;
+	AssignVar(Node* var, Node* value, ST::SymTable* parentST) : var(var), value(value), parentST(parentST)  { }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
 class DeclVar : public Node { //nodo utilizado na declaração de variáveis. separado das operações unárias para facilitar o analyzeTree()
 public:
 	Node* next;
-	DeclVar(Node* next) : next(next) { }
-	// std::string analyzeTree();
+	ST::SymTable* parentST;
+	DeclVar(Node* next, ST::SymTable* parentST) : next(next), parentST(parentST)  { }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -92,7 +89,6 @@ class Par : public Node { //nodo utilizado quando há parênteses nas fórmulas
 public:
 	Node* content;
 	Par(Node* content) : content(content) { this->type = content->type; }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -105,7 +101,6 @@ public:
 	llvm::BasicBlock* functionBB;
 
 	Function(std::string name, Node* params, Block* code, Type type) : name(name), params(params), code(code) { this->type = type; }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -114,7 +109,6 @@ public:
 	std::string name;
 	Node* next;
 	Parameter(std::string name, Node* next, Type type) : name(name), next(next) { this->type = type; }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -123,7 +117,6 @@ public:
 	std::string name;
 	Node* args;
 	FunCall(std::string name, Node* args, Type type) : name(name), args(args) { this->type = type; }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -131,7 +124,6 @@ class Arguments : public Node {
 public:
 	NodeList arguments;
 	Arguments() { }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -139,7 +131,6 @@ class Return : public Node {
 public:
 	Node* expr;
 	Return(Node* expr) : expr(expr) { this->type = expr->type; }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -149,7 +140,6 @@ public:
 	Node* then;
 	Node* _else;
 	Conditional(Node* condition, Node* then, Node* _else) : condition(condition), then(then), _else(_else) { }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
@@ -158,7 +148,6 @@ public:
 	Node* condition;
 	Node* loopBlock;
 	Loop(Node* condition, Node* loopBlock) : condition(condition), loopBlock(loopBlock) { }
-	// std::string analyzeTree();
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 
