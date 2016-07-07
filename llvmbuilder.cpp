@@ -187,8 +187,8 @@ llvm::Value* LlvmBuilder::buildAnd(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateAnd(left, right, "and");
 }
 
-llvm::Value* LlvmBuilder::buildNot(llvm::Value* left) {
-	return Builder.CreateNot(left, "not");
+llvm::Value* LlvmBuilder::buildNot(llvm::Value* value) {
+	return Builder.CreateNot(value, "not");
 }
 
 llvm::Value* LlvmBuilder::buildEqInt(llvm::Value* left, llvm::Value* right) {
@@ -213,4 +213,8 @@ llvm::Value* LlvmBuilder::buildLtInt(llvm::Value* left, llvm::Value* right) {
 
 llvm::Value* LlvmBuilder::buildLeInt(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateICmpSLE(left, right, "le int");
+}
+
+llvm::Value* LlvmBuilder::buildNeg(llvm::Value* value) {
+	return Builder.CreateNeg(value, "neg");
 }

@@ -48,7 +48,9 @@ public:
 
 	llvm::Value* buildOr(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildAnd(llvm::Value* left, llvm::Value* right);
-	llvm::Value* buildNot(llvm::Value* left);
+	llvm::Value* buildNot(llvm::Value* value);
+
+	llvm::Value* buildNeg(llvm::Value* value);
 
 	llvm::Value* buildEqInt(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildNeInt(llvm::Value* left, llvm::Value* right);

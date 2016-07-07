@@ -16,6 +16,16 @@ llvm::Value* Block::analyzeTree(LlvmBuilder* llvmbuilder) {
 
 llvm::Value* UnOp::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "UnOp" << std::endl;
+
+	llvm::Value* value = next->analyzeTree(llvmbuilder);
+
+	switch(op) {
+	case _not:
+		return llvmbuilder->buildNot(value);
+	case neg:
+		return llvmbuilder->buildNeg(value);
+	}
+
 	return nullptr;
 }
 
@@ -67,7 +77,7 @@ llvm::Value* Const::analyzeTree(LlvmBuilder* llvmbuilder) {
 	case _double:
 		return llvmbuilder->buildDouble(atof(value.c_str()));
 	case _bool:
-		return llvmbuilder->buildBool(value != "0");
+		return llvmbuilder->buildBool(value == "true");
 	case _void: case desconhecido:
 		return nullptr; // Nunca deve chegar aqui
 	}
