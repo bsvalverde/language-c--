@@ -130,7 +130,7 @@ public:
 class Return : public Node {
 public:
 	Node* expr;
-	Return(Node* expr) : expr(expr) { this->type = expr->type; }
+	Return(Node* expr, Type type) : expr(expr) { this->type = type; }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 

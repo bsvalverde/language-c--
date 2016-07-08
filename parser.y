@@ -59,6 +59,8 @@ extern void yyerror(const char* s, ...);
 %left T_MULT T_DIV
 %right U_NEG
 %left U_PAR
+%nonassoc LOWER_THAN_ELSE
+%nonassoc T_ELSE
 %nonassoc error
 
 %start program
@@ -67,6 +69,7 @@ extern void yyerror(const char* s, ...);
 
 program	: code {
 			root = $1;
+			//TODO verificar se tem main
 		}
 		;
 
@@ -91,7 +94,7 @@ decl	: type listvar {
 			ST::Symbol* s = symtable->addVariable($2, $1);
 			AST::Variable* var = new AST::Variable($2, NULL, $1, symtable);
 			$$ = new AST::AssignVar(var, $4, symtable);
-		}
+		} //TODO variável não pode ser void
 		;
 
 fun 	: type T_ID T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
@@ -103,7 +106,7 @@ fun 	: type T_ID T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
 			}
 			symtable->addFunction($2, $1, parameters);
 			$$ = new AST::Function($2, $5, $8, $1);
-		}
+		} //TODO verificar se tem return, e qual o tipo
 		;
 
 type 	: T_DINT {
@@ -225,12 +228,13 @@ args 	: expr {
 		| {
 			$$ = new AST::Arguments();
 		}
+		;
 
 cmd 	: decl T_ENDL
 		| attr T_ENDL
 		| cond
 		| loop
-		// | ret
+		| ret T_ENDL
 		| error T_ENDL { yyerrok; $$=NULL; } //TODO ver como faz pra acusar erro dentro de funcao
 		;
 
@@ -240,7 +244,7 @@ attr 	: T_ID T_ATTR expr {
 		}
 		;
 
-cond 	: T_IF T_APAR expr T_FPAR ccmds {
+cond 	: T_IF T_APAR expr T_FPAR ccmds %prec LOWER_THAN_ELSE {
 			$$ = new AST::Conditional($3, $5, NULL);
 		}
 		| T_IF T_APAR expr T_FPAR ccmds T_ELSE ccmds {
@@ -255,9 +259,18 @@ ccmds	: newscope cmd endscope {
 		| T_ACH newscope cmds endscope T_FCH {
 			$$ = $3;
 		}
+		;
 
 loop	: T_WHILE T_APAR expr T_FPAR T_ACH newscope cmds endscope T_ACH {
 			$$ = new AST::Loop($3, $7);
+		}
+		;
+
+ret 	: T_RET {
+			$$ = new AST::Return(NULL, Type::void);
+		}
+		| T_RET expr {
+			$$ = new AST::Return($2, $2->type);
 		}
 		;
 
