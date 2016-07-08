@@ -23,6 +23,8 @@ public:
 
 	Symbol* addFunction(std::string name, Type type, std::list<Symbol*> parameters);
 	Symbol* getFunction(std::string name, int argNo);
+
+	void searchForMain();
 //private:
 	bool hasSymbol(std::string name);
 

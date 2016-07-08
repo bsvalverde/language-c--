@@ -16,24 +16,24 @@ void LlvmBuilder::dump() {
 	this->module->dump();
 }
 
-void LlvmBuilder::run(llvm::Function* _main) {
-	llvm::ExecutionEngine* engine;
-	std::string error;
+// void LlvmBuilder::run(llvm::Function* _main) {
+// 	llvm::ExecutionEngine* engine;
+// 	std::string error;
 
-	LLVMInitializeNativeTarget();
+// 	LLVMInitializeNativeTarget();
 
-	engine = llvm::EngineBuilder(this->module).setErrorStr(&error).create();
+// 	engine = llvm::EngineBuilder(this->module).setErrorStr(&error).create();
 
-	if (!engine) {
-		fprintf(stderr, "Could not create engine: %s\n", error.c_str());
-		exit(1);
-    }
+// 	if (!engine) {
+// 		fprintf(stderr, "Could not create engine: %s\n", error.c_str());
+// 		exit(1);
+//     }
 
-     void *mainptr = engine->getPointerToFunction(_main);
+//      void *mainptr = engine->getPointerToFunction(_main);
 
-    int (*result)() = (int (*)())(intptr_t)mainptr;
-    std::cout << "Result of main = " << result() << std::endl;
-}
+//     int (*result)() = (int (*)())(intptr_t)mainptr;
+//     std::cout << "Result of main = " << result() << std::endl;
+// }
 
 //teste
 llvm::Function* LlvmBuilder::buildMain() {

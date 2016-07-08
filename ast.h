@@ -130,7 +130,16 @@ public:
 class Return : public Node {
 public:
 	Node* expr;
-	Return(Node* expr, Type type) : expr(expr) { this->type = type; }
+	Return(Node* expr, Type type, Type fType) : expr(expr) {
+		this->type = type;
+		if(this->type != fType){
+			if(this->type == Type::_void){
+				yyerror("semântico: comando de retorno sem valor em função não void.");
+			} else {
+				yyerror("semântico: comando de retorno com valor em função void.");
+			}
+		}
+	}
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
 };
 

@@ -8,9 +8,9 @@
 #include "llvm/IR/Module.h"
 
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
-#include "llvm/ExecutionEngine/JIT.h"
+//#include "llvm/ExecutionEngine/JIT.h"
 
-#include "llvm/Analysis/Verifier.h"
+//#include "llvm/Analysis/Verifier.h"
 
 extern llvm::LLVMContext &context;
 extern llvm::IRBuilder<> Builder;

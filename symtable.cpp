@@ -7,6 +7,10 @@ SymTable::SymTable(SymTable* superScope) {
 }
 
 Symbol* SymTable::addVariable(std::string name, Type type) {
+	if(Type::_void){
+		yyerror("semântico: variável %s declarada com tipo void.", name.c_str());
+		return new Symbol(name);
+	}
 	if(hasSymbol(name)) {
 		Symbol* sym = this->table[name];
 		if(sym->kind != Kind::variable){
@@ -71,6 +75,17 @@ Symbol* SymTable::getFunction(std::string name, int argNo) {
 		return new Symbol(name);
 	} else {
 		return this->superScope->getFunction(name, argNo);
+	}
+}
+
+void SymTable::searchForMain(){
+	if(!this->hasSymbol("main")){
+		yyerror("semântico: função main() não existe.");
+	} else {
+		Symbol* s = this->table["main"];
+		if(s->kind != Kind::function){
+			yyerror("semântico: função main() não existe.");
+		}
 	}
 }
 

@@ -7,6 +7,7 @@
 AST::Block* root;
 ST::SymTable* symtable = new ST::SymTable(NULL);
 Type inUse = Type::desconhecido;
+Type fType = inUse;
 
 extern int yylex();
 extern void yyerror(const char* s, ...);	
@@ -45,10 +46,10 @@ extern void yyerror(const char* s, ...);
 
 //Definição de tipos não-terminais
 %type <block> program code cmds ccmds
-%type <node> global cmd decl listvar attr expr const fun params cond loop
+%type <node> global cmd decl listvar attr expr const fun params cond loop ret
 %type <typeEnum> type
 %type <argList> args
-%type <node> newscope endscope
+%type <node> ftype newscope endscope
 
 //Precedencia de operadores
 %left T_OR T_AND
@@ -69,6 +70,7 @@ extern void yyerror(const char* s, ...);
 
 program	: code {
 			root = $1;
+			symtable->searchForMain();
 			//TODO verificar se tem main
 		}
 		;
@@ -97,15 +99,15 @@ decl	: type listvar {
 		} //TODO variável não pode ser void
 		;
 
-fun 	: type T_ID T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
-			AST::Parameter* par = (AST::Parameter*)$5;
+fun 	: type T_ID ftype T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
+			AST::Parameter* par = (AST::Parameter*)$6;
 			std::list<ST::Symbol*> parameters;
 			while(par != NULL){
 				parameters.push_front(symtable->addVariable(par->name, par->type));
 				par = (AST::Parameter*)par->next;
 			}
 			symtable->addFunction($2, $1, parameters);
-			$$ = new AST::Function($2, $5, $8, $1);
+			$$ = new AST::Function($2, $6, $9, $1);
 		} //TODO verificar se tem return, e qual o tipo
 		;
 
@@ -124,6 +126,12 @@ type 	: T_DINT {
 		| T_DVOID {
 			inUse = Type::_void;
 			$$ = Type::_void;
+		}
+		;
+
+ftype	: {
+			fType = inUse;
+			$$ = NULL;
 		}
 		;
 
@@ -267,10 +275,10 @@ loop	: T_WHILE T_APAR expr T_FPAR T_ACH newscope cmds endscope T_ACH {
 		;
 
 ret 	: T_RET {
-			$$ = new AST::Return(NULL, Type::void);
+			$$ = new AST::Return(NULL, Type::_void, fType);
 		}
 		| T_RET expr {
-			$$ = new AST::Return($2, $2->type);
+			$$ = new AST::Return($2, $2->type, fType);
 		}
 		;
 
