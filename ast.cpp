@@ -186,3 +186,78 @@ llvm::Value* Loop::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Loop" << std::endl;
 	return nullptr;
 }
+
+bool Block::hasReturn() {
+	bool ret = false;
+	for(Node* node : nodes) {
+		if(node != NULL)
+			if(node->hasReturn()){
+				ret = true;
+				break;
+			}
+	}
+	return ret;
+}
+
+bool UnOp::hasReturn() {
+	return false;
+}
+
+bool BinOp::hasReturn() {
+	return false;
+}
+
+bool Variable::hasReturn() {
+	return false;
+}
+
+bool Const::hasReturn() {
+	yyerror("fatal: não devia chegar aqui!");
+	return false;
+}
+
+bool AssignVar::hasReturn() {	
+	return false;
+}
+
+bool DeclVar::hasReturn() {
+	return false;
+}
+
+bool Par::hasReturn() {
+	yyerror("fatal: não devia chegar aqui!");
+	return false;
+}
+
+bool Function::hasReturn() {
+	return code->hasReturn();
+}
+
+bool Parameter::hasReturn() {
+	yyerror("fatal: não devia chegar aqui!");
+	return false;
+}
+
+bool FunCall::hasReturn() {
+	return false;
+}
+
+bool Arguments::hasReturn() {
+	yyerror("fatal: não devia chegar aqui!");
+	return false;
+}
+
+bool Return::hasReturn() {
+	return true;
+}
+
+bool Conditional::hasReturn() {
+	if(this->_else == NULL)
+		return false;
+	return (this->then->hasReturn() && this->_else->hasReturn());
+}
+
+bool Loop::hasReturn() {
+	//TODO
+	return false;
+}

@@ -6,23 +6,18 @@
 extern AST::Block* root; //set on Bison file
 extern int yyparse();
 extern int yydebug;
+bool generateCode = true;
 
 int main(int argc, char **argv)
 {
-	// if(AST::llvmbuilder == 0) {
-		// AST::llvmbuilder = new LlvmBuilder();
-	// }
-
-    LlvmBuilder* llvmbuilder = new LlvmBuilder();
-
+	LlvmBuilder* llvmbuilder = new LlvmBuilder();
     //yydebug = 1;
     yyparse();
-    //root->analyzeTree(); 
-    std::cout << std::endl;
-    root->analyzeTree(llvmbuilder);
-    std::cout << std::endl;
-
-    llvmbuilder->dump();
-
+    if(generateCode){
+        std::cout << std::endl; //necessario?
+        root->analyzeTree(llvmbuilder);
+        std::cout << std::endl; //necessario?
+        llvmbuilder->dump();
+    }
     return 0;
 }

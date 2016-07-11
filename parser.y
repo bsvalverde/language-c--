@@ -244,7 +244,7 @@ cmd 	: decl T_ENDL
 		| loop
 		| ret T_ENDL
 		| error T_ENDL { yyerrok; $$=NULL; } //TODO ver como faz pra acusar erro dentro de funcao
-		;
+		; //TODO chamar função void
 
 attr 	: T_ID T_ATTR expr {
 			ST::Symbol* symbol = symtable->getVariable($1);
@@ -271,7 +271,7 @@ ccmds	: newscope cmd endscope {
 
 loop	: T_WHILE T_APAR expr T_FPAR T_ACH newscope cmds endscope T_ACH {
 			$$ = new AST::Loop($3, $7);
-		}
+		} //TODO do while
 		;
 
 ret 	: T_RET {

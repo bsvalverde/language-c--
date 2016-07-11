@@ -9,6 +9,7 @@
 #include "enums.h"
 
 extern void yyerror(const char* s, ...);
+extern bool generateCode;
 
 namespace ST {
 
