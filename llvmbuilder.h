@@ -8,7 +8,7 @@
 #include "llvm/IR/Module.h"
 
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
-//#include "llvm/ExecutionEngine/JIT.h"
+#include "llvm/ExecutionEngine/JIT.h"
 
 //#include "llvm/Analysis/Verifier.h"
 
@@ -29,6 +29,8 @@ public:
 
 	void setInsertPoint(llvm::BasicBlock* block);
 	llvm::BasicBlock* getCurrentBasicBlock();
+
+	void createReturn(llvm::Value* value);
 	
 	llvm::Value* buildInt(int value);
 	llvm::Value* buildDouble(double value);
@@ -62,7 +64,7 @@ public:
 	// testes apenas!
 	llvm::Function* buildMain();
 	void dump();
-	void run(llvm::Function* _main);
+	void run();
 private:
 
 	llvm::Module* module;

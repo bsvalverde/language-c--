@@ -18,6 +18,7 @@ int main(int argc, char **argv)
         root->analyzeTree(llvmbuilder);
         std::cout << std::endl; //necessario?
         llvmbuilder->dump();
+        llvmbuilder->run();
     }
     return 0;
 }

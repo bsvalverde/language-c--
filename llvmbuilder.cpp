@@ -16,24 +16,26 @@ void LlvmBuilder::dump() {
 	this->module->dump();
 }
 
-// void LlvmBuilder::run(llvm::Function* _main) {
-// 	llvm::ExecutionEngine* engine;
-// 	std::string error;
+void LlvmBuilder::run() {
+	llvm::Function* _main = this->module->getFunction("main");
 
-// 	LLVMInitializeNativeTarget();
+	llvm::ExecutionEngine* engine;
+	std::string error;
 
-// 	engine = llvm::EngineBuilder(this->module).setErrorStr(&error).create();
+	LLVMInitializeNativeTarget();
 
-// 	if (!engine) {
-// 		fprintf(stderr, "Could not create engine: %s\n", error.c_str());
-// 		exit(1);
-//     }
+	engine = llvm::EngineBuilder(this->module).setErrorStr(&error).create();
 
-//      void *mainptr = engine->getPointerToFunction(_main);
+	if (!engine) {
+		fprintf(stderr, "Could not create engine: %s\n", error.c_str());
+		exit(1);
+    }
 
-//     int (*result)() = (int (*)())(intptr_t)mainptr;
-//     std::cout << "Result of main = " << result() << std::endl;
-// }
+     void *mainptr = engine->getPointerToFunction(_main);
+
+    int (*result)() = (int (*)())(intptr_t)mainptr;
+    std::cout << "Result of main = " << result() << std::endl;
+}
 
 //teste
 llvm::Function* LlvmBuilder::buildMain() {
@@ -121,6 +123,10 @@ llvm::Function* LlvmBuilder::createFunction(std::string name) {
 
 llvm::BasicBlock* LlvmBuilder::createBasicBlock(llvm::Function* function, std::string name) {
 	return llvm::BasicBlock::Create(context, name, function);
+}
+
+void LlvmBuilder::createReturn(llvm::Value* value) {
+	Builder.CreateRet(value);
 }
 
 void LlvmBuilder::setInsertPoint(llvm::BasicBlock* block) {

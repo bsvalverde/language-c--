@@ -148,6 +148,8 @@ llvm::Value* Arguments::analyzeTree(LlvmBuilder* llvmbuilder) {
 
 llvm::Value* Return::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Return" << std::endl;
+	llvm::Value* retVal = this->expr->analyzeTree(llvmbuilder);
+	llvmbuilder->createReturn(retVal);
 	return nullptr;
 }
 
