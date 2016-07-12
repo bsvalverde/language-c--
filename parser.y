@@ -71,7 +71,7 @@ extern void yyerror(const char* s, ...);
 program	: code {
 			root = $1;
 			symtable->searchForMain();
-			//TODO verificar se tem main
+			//TODO main não pode ter argumentos
 		}
 		;
 

@@ -7,7 +7,7 @@ SymTable::SymTable(SymTable* superScope) {
 }
 
 Symbol* SymTable::addVariable(std::string name, Type type) {
-	if(Type::_void){
+	if(type == Type::_void){
 		yyerror("semântico: variável %s declarada com tipo void.", name.c_str());
 		generateCode = false;
 		return new Symbol(name);
