@@ -7,9 +7,9 @@ LlvmBuilder::LlvmBuilder() {
 	this->module = new llvm::Module("Intermediary C-- code", context);
 
 	// //testes
-	// auto _main = this->buildMain();
-	// this->module->dump();
-	// this->run(_main);
+	auto _main = this->buildMain();
+	this->module->dump();
+	this->run();
 }
 
 void LlvmBuilder::dump() {
@@ -41,52 +41,18 @@ void LlvmBuilder::run() {
 llvm::Function* LlvmBuilder::buildMain() {
 	llvm::Function* _main = this->createFunction("main");
 	llvm::BasicBlock* mainblock = this->createBasicBlock(_main, "mainBB");
+
+	llvm::Function* func2 = this->createFunction("func2");
+	llvm::BasicBlock* blockFunc2 = this->createBasicBlock(func2, "func2BB");
+	Builder.SetInsertPoint(blockFunc2);
+	this->createReturn(this->buildInt(4));
+
 	this->setInsertPoint(mainblock);
-
-	// llvm::Type* typeint = llvm::Type::getInt32Ty(context);
-	// llvm::FunctionType* typemain = llvm::FunctionType::get(typeint, false);
-
-	// llvm::Function* _main = llvm::Function::Create(typemain, llvm::Function::ExternalLinkage, "main", this->module);
-	// llvm::BasicBlock* mainblock = llvm::BasicBlock::Create(context, "entry", _main);
-
-	// Builder.SetInsertPoint(mainblock);
-
-	auto res = this->buildSubInt(this->buildInt(3), this->buildInt(9));
-	// auto res2 = this->buildMulInt(this->buildInt(30), this->buildInt(27));
-	auto if_cond = this->buildBool(false);
-
-	llvm::AllocaInst* var1 = this->storeVariable("A", this->buildInt(10));
-	llvm::AllocaInst* var2 = this->storeVariable("B", this->buildInt(0));
-	llvm::Value* var1Value = this->loadVariable("A", var1);
-	llvm::Value* sum = this->buildSumInt(var1Value, this->buildInt(5));
-	this->setVariable(sum, var1);
-
-	// llvm::AllocaInst* var1 = Builder.CreateAlloca(llvm::Type::getInt32Ty(context), NULL, "var1");
-	// Builder.CreateStore(res2, var1);
-	// llvm::Value* retvalue = Builder.CreateLoad(var1, "retvalue");
-
-	auto _if = this->createBasicBlock(_main, "if");
-	auto _else = this->createBasicBlock(_main, "if");
-
-	Builder.SetInsertPoint(_if);
-	Builder.CreateRet(res);
-
-	Builder.SetInsertPoint(_else);
-	Builder.CreateRet(var1);
+	std::vector<llvm::Value*> emptyArgs;
+	auto funcRet = Builder.CreateCall(func2, llvm::makeArrayRef(emptyArgs));
+	this->createReturn(funcRet);
 
 
-	Builder.SetInsertPoint(mainblock);
-	auto branch = this->createCondBranch(_if, if_cond, _else);
-
-
-	// std::cout << _main->getEntryBlock() << std::endl;
-	// std::cout << mainblock << std::endl;
-
-	// Builder.CreateRet(res2);
-
-	// Builder.CreateRet(_return);
-
-	// llvm::verifyFunction(*_main);
 
 	return _main;
 }
@@ -116,9 +82,9 @@ void LlvmBuilder::setVariable(llvm::Value* value, llvm::AllocaInst* var) {
 //TODO Só int por enquanto
 llvm::Function* LlvmBuilder::createFunction(std::string name) {
 	llvm::Type* typeint = llvm::Type::getInt32Ty(context);
-	llvm::FunctionType* typemain = llvm::FunctionType::get(typeint, false);
+	llvm::FunctionType* funcType = llvm::FunctionType::get(typeint, false);
 
-	return llvm::Function::Create(typemain, llvm::Function::ExternalLinkage, name, this->module);
+	return llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, name, this->module);
 }
 
 llvm::BasicBlock* LlvmBuilder::createBasicBlock(llvm::Function* function, std::string name) {
@@ -139,6 +105,11 @@ llvm::BasicBlock* LlvmBuilder::getCurrentBasicBlock() {
 
 llvm::BranchInst* LlvmBuilder::createCondBranch(llvm::BasicBlock* _if, llvm::Value* cond, llvm::BasicBlock* _else) {
 	return Builder.CreateCondBr(cond, _if, _else);
+}
+
+llvm::CallInst* LlvmBuilder::createFunctionCall(llvm::Function* function, llvm::ArrayRef<llvm::Value*> args) {
+
+	return Builder.CreateCall(function, args);
 }
 
 llvm::Value* LlvmBuilder::buildInt(int value) {

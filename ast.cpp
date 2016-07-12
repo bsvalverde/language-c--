@@ -138,6 +138,7 @@ llvm::Value* Parameter::analyzeTree(LlvmBuilder* llvmbuilder) {
 
 llvm::Value* FunCall::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "FunCall" << std::endl;
+	// return llvmbuilder->createFunctionCall(this->args->analyzeTree(llvmbuilder), name);
 	return nullptr;
 }
 

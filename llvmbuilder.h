@@ -31,6 +31,8 @@ public:
 	llvm::BasicBlock* getCurrentBasicBlock();
 
 	void createReturn(llvm::Value* value);
+
+	llvm::CallInst* createFunctionCall(llvm::Function* function, llvm::ArrayRef<llvm::Value*> args);
 	
 	llvm::Value* buildInt(int value);
 	llvm::Value* buildDouble(double value);
