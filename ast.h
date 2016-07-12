@@ -48,7 +48,18 @@ public:
 	Node* left;
 	Node* right;
 	BinOp(Node* left, BinOperation op, Node* right) : left(left), op(op), right(right) {
-		this->type = Type::desconhecido;
+		switch(op){
+			case plus: case sub: case mult: case _div:
+				this->type = Type::_int;
+				if(left->type == Type::_double || right->type == Type::_double)
+					this->type = Type::_double;
+				break;
+				//TODO criar nodos coerção
+				//TODO verificar se algum dos operandos é void
+			case gt: case lt: case gte: case lte: case eq: case neq: case _and: case _or:
+				this->type = Type::_bool;
+				break;
+		}
 	}
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();

@@ -99,6 +99,12 @@ void SymTable::searchForMain(){
 		if(s->kind != Kind::function){
 			yyerror("semântico: função main() não existe.");
 			generateCode = false;
+		} else {
+			Function* f = (Function*)s;
+			if(f->parameters.size() > 0){
+				yyerror("semântico: função main() não pode ter argumentos.");
+				generateCode = false;
+			}
 		}
 	}
 }
