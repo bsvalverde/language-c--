@@ -117,8 +117,9 @@ public:
 	Block* code;
 
 	llvm::BasicBlock* functionBB;
+	ST::SymTable* parentST;
 
-	Function(std::string name, Node* params, Block* code, Type type) : name(name), params(params), code(code) {
+	Function(std::string name, Node* params, Block* code, Type type, ST::SymTable* parentST) : name(name), params(params), code(code), parentST(parentST) {
 		this->type = type;
 		if(!this->hasReturn()){
 			yyerror("semântico: função %s sem comando de retorno certamente alcançável.", this->name.c_str());
@@ -132,7 +133,7 @@ public:
 class Parameter : public Node {
 public:
 	std::string name;
-	Node* next;
+	Node* next;	
 	Parameter(std::string name, Node* next, Type type) : name(name), next(next) { this->type = type; }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();
@@ -142,7 +143,8 @@ class FunCall : public Node {
 public:
 	std::string name;
 	Node* args;
-	FunCall(std::string name, Node* args, Type type) : name(name), args(args) { this->type = type; }
+	ST::SymTable* parentST;
+	FunCall(std::string name, Node* args, Type type, ST::SymTable* parentST) : name(name), args(args), parentST(parentST) { this->type = type; }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();
 };

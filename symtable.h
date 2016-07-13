@@ -44,6 +44,7 @@ public:
 	Kind kind;
 
 	llvm::AllocaInst* inst;
+	llvm::Function* func;
 };
 
 class Variable : public Symbol {

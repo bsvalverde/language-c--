@@ -107,7 +107,7 @@ fun 	: type T_ID ftype T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
 				par = (AST::Parameter*)par->next;
 			}
 			symtable->addFunction($2, $1, parameters);
-			$$ = new AST::Function($2, $6, $9, $1);
+			$$ = new AST::Function($2, $6, $9, $1, symtable);
 		} //TODO verificar se tem return, e qual o tipo
 		;
 
@@ -152,7 +152,7 @@ expr	: const
 		}
 		| T_ID T_APAR args T_FPAR {
 			ST::Symbol* s = symtable->getFunction($1, $3->arguments.size());
-			$$ = new AST::FunCall($1, $3, s->type);
+			$$ = new AST::FunCall($1, $3, s->type, symtable);
 		}
 		| expr T_PLUS expr {
 			$$ = new AST::BinOp($1, plus, $3);

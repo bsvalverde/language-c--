@@ -120,9 +120,23 @@ llvm::Value* Par::analyzeTree(LlvmBuilder* llvmbuilder) {
 	return this->content->analyzeTree(llvmbuilder);
 }
 
+// Function usa Parameters
 llvm::Value* Function::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Function" << std::endl;
 	llvm::Function* function = llvmbuilder->createFunction(this->name);
+
+	Parameter* params = (Parameter*) this->params;
+	int argSize = 0;
+	if(params) {
+		Variable* var = (Variable*) params->next;
+		while(var) {
+			var = (Variable*) var->next;
+			argSize++;
+		}	
+	}
+
+	this->parentST->getFunction(this->name, argSize)->func = function;
+
 	this->functionBB = llvmbuilder->createBasicBlock(function, this->name+"BB");
 	llvmbuilder->setInsertPoint(this->functionBB);
 
@@ -131,15 +145,32 @@ llvm::Value* Function::analyzeTree(LlvmBuilder* llvmbuilder) {
 	return function;
 }
 
+// TODO retornar ArrayRef de Value*, e não Value*
 llvm::Value* Parameter::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Parameter" << std::endl;
 	return nullptr;
 }
 
+// FunCall usa Arguments
 llvm::Value* FunCall::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "FunCall" << std::endl;
-	// return llvmbuilder->createFunctionCall(this->args->analyzeTree(llvmbuilder), name);
-	return nullptr;
+
+	std::vector<llvm::Value*> argsArrayRef;
+	Arguments* args = (Arguments*) this->args;
+
+	Variable* var;
+	for(Node* node : args->arguments) {
+		if(node != NULL)
+			var = (Variable*) node;
+			
+			llvm::AllocaInst* inst = this->parentST->getVariable(var->name)->inst;
+			argsArrayRef.push_back(inst);
+	}
+
+	llvm::Function* func = ((ST::Function*) this->parentST->getFunction(this->name, args->arguments.size()))->func;
+
+	return llvmbuilder->createFunctionCall(func, llvm::makeArrayRef(argsArrayRef));
+	// return nullptr;
 }
 
 llvm::Value* Arguments::analyzeTree(LlvmBuilder* llvmbuilder) {

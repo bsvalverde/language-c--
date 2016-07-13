@@ -7,9 +7,9 @@ LlvmBuilder::LlvmBuilder() {
 	this->module = new llvm::Module("Intermediary C-- code", context);
 
 	// //testes
-	auto _main = this->buildMain();
-	this->module->dump();
-	this->run();
+	// auto _main = this->buildMain();
+	// this->module->dump();
+	// this->run();
 }
 
 void LlvmBuilder::dump() {
