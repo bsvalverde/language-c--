@@ -33,6 +33,14 @@ public:
     bool hasReturn();
 };
 
+class Coertion : public Node {
+public:
+	Node* target;
+	Coertion(Node* target, Type type) : target(target) { this->type = type; }
+	virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
+	bool hasReturn();
+};
+
 class UnOp : public Node {
 public:
 	UnOperation op;
@@ -53,11 +61,42 @@ public:
 				this->type = Type::_int;
 				if(left->type == Type::_double || right->type == Type::_double)
 					this->type = Type::_double;
+				if(left->type == Type::_void || right->type == Type::_void){
+					yyerror("semântico: valor do tipo void utilizado em operação binária.");
+				} else {
+					if(left->type != this->type){
+						this->left = new Coertion(left, this->type);
+					}
+					if(right->type != this->type){
+						this->right = new Coertion(right, this->type);
+					}
+				}
 				break;
-				//TODO criar nodos coerção
-				//TODO verificar se algum dos operandos é void
-			case gt: case lt: case gte: case lte: case eq: case neq: case _and: case _or:
+			case gt: case lt: case gte: case lte: case eq: case neq: {
 				this->type = Type::_bool;
+				Type currentType = Type::_int;
+				if(left->type == Type::_double || right->type == Type::_double)
+					currentType = Type::_double;
+				if(left->type == Type::_void || right->type == Type::_void){
+					yyerror("semântico: valor do tipo void utilizado em operação binária.");
+				} else {
+					if(left->type != currentType)
+						this->left = new Coertion(left, currentType);
+					if(right->type != currentType)
+						this->right = new Coertion(right, currentType);
+				}
+				break;
+			}
+			case _and: case _or:
+				this->type = Type::_bool;
+				if(left->type == Type::_void || right->type == Type::_void){
+					yyerror("semântico: valor do tipo void utilizado em operação binária.");
+				} else {
+					if(left->type != this->type)
+						this->left = new Coertion(left, this->type);
+					if(right->type != this->type)
+						this->right = new Coertion(right, this->type);
+				}
 				break;
 		}
 	}
@@ -89,7 +128,11 @@ public:
 	Node* value;
 	ST::SymTable* parentST;
 	AssignVar(Node* var, Node* value, ST::SymTable* parentST) : var(var), value(value), parentST(parentST)  {
-		//TODO se expr for void gera erro
+		if(value->type == Type::_void){
+			yyerror("semântico: valor do tipo void não foi ignorado como deveria.");
+		} else if(var->type != value->type){
+			this->value = new Coertion(value, var->type);
+		}
 	}
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();
@@ -140,20 +183,29 @@ public:
     bool hasReturn();
 };
 
+class Arguments : public Node {
+public:
+	NodeList arguments;
+	Arguments() { }
+    virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
+    bool hasReturn();
+};
+
 class FunCall : public Node {
 public:
 	std::string name;
 	Node* args;
 	ST::SymTable* parentST;
-	FunCall(std::string name, Node* args, Type type, ST::SymTable* parentST) : name(name), args(args), parentST(parentST) { this->type = type; }
-    virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
-    bool hasReturn();
-};
-
-class Arguments : public Node {
-public:
-	NodeList arguments;
-	Arguments() { }
+	FunCall(std::string name, Node* args, Type type, ST::SymTable* parentST) : name(name), args(args), parentST(parentST) {
+		this->type = type;
+		for(Node* arg : ((Arguments*)args)->arguments){
+			if(arg->type == Type::_void) {
+				yyerror("semântico: uso inválido de expressão void.");
+			} else if(arg->type != this->type) {
+				arg = new Coertion(arg, this->type);
+			}
+		}
+	}
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();
 };
@@ -163,12 +215,12 @@ public:
 	Node* expr;
 	Return(Node* expr, Type type, Type fType) : expr(expr) {
 		this->type = type;
-		if(this->type != fType){
-			if(this->type == Type::_void){
-				yyerror("semântico: comando de retorno sem valor em função não void.");
-			} else {
-				yyerror("semântico: comando de retorno com valor em função void.");
-			}
+		if(this->type == Type::_void && fType != Type::_void){
+			yyerror("semântico: comando de retorno sem valor em função não void.");
+		} else if (this->type != Type::_void && fType == Type::_void){
+			yyerror("semântico: comando de retorno com valor em função void.");
+		} else if(this->type != fType){
+			this->expr = new Coertion(expr, this->type);
 		}
 	}
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
@@ -193,14 +245,6 @@ public:
 	Loop(Node* condition, Node* loopBlock, bool _do) : condition(condition), loopBlock(loopBlock), _do (_do) { }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();
-};
-
-class Coertion : public Node {
-public:
-	Node* target;
-	Coertion(Node* target, Type type) : target(target) { this->type = type; }
-	virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
-	bool hasReturn();
 };
 
 }

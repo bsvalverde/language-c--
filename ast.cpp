@@ -221,6 +221,11 @@ llvm::Value* Loop::analyzeTree(LlvmBuilder* llvmbuilder) {
 	return nullptr;
 }
 
+llvm::Value* Coertion::analyzeTree(LlvmBuilder* llvmbuilder){
+	std::cout << "Coertion" << std::endl;
+	return target->analyzeTree(llvmbuilder);
+}
+
 bool Block::hasReturn() {
 	bool ret = false;
 	for(Node* node : nodes) {
