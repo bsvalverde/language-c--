@@ -107,6 +107,10 @@ llvm::BranchInst* LlvmBuilder::createCondBranch(llvm::BasicBlock* _if, llvm::Val
 	return Builder.CreateCondBr(cond, _if, _else);
 }
 
+llvm::BranchInst* LlvmBuilder::createBranch(llvm::BasicBlock* dest) {
+	return Builder.CreateBr(dest);
+}
+
 llvm::CallInst* LlvmBuilder::createFunctionCall(llvm::Function* function, llvm::ArrayRef<llvm::Value*> args) {
 
 	return Builder.CreateCall(function, args);

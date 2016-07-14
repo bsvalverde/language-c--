@@ -205,19 +205,32 @@ llvm::Value* Conditional::analyzeTree(LlvmBuilder* llvmbuilder) {
 
 	llvmbuilder->setInsertPoint(ip);
 	return llvmbuilder->createCondBranch(_if, cond, _else);
-
-	// printf("entrando no cond");
-	// std::string retorno = "Expressao condicional";
-	// retorno += "\nIF:\n" + this->condition->analyzeTree(llvmbuilder);
-	// retorno += "\nTHEN:\n" + this->then->analyzeTree(llvmbuilder);
-	// if(this->_else != NULL){
-	// 	retorno += "ELSE:\n" + this->_else->analyzeTree(llvmbuilder);
-	// }
-	// return retorno;
 }
 
 llvm::Value* Loop::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Loop" << std::endl;
+
+	llvm::BasicBlock* beforeBB = llvmbuilder->getCurrentBasicBlock();
+
+	llvm::BasicBlock* loopBB = llvmbuilder->createBasicBlock(beforeBB->getParent(), "loop");
+	llvm::BasicBlock* afterBB = llvmbuilder->createBasicBlock(beforeBB->getParent(), "after");
+
+	llvm::Value* cond;
+	if(this->_do) {
+		llvmbuilder->createBranch(loopBB);
+	} else {
+		cond = this->condition->analyzeTree(llvmbuilder);
+		llvmbuilder->createCondBranch(loopBB, cond, afterBB);
+	}
+
+	llvmbuilder->setInsertPoint(loopBB);
+	this->loopBlock->analyzeTree(llvmbuilder);
+
+	cond = this->condition->analyzeTree(llvmbuilder);
+	llvmbuilder->createCondBranch(loopBB, cond, afterBB);
+
+	llvmbuilder->setInsertPoint(afterBB);
+
 	return nullptr;
 }
 

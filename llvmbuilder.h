@@ -26,6 +26,7 @@ public:
 	llvm::Function* createFunction(std::string name);
 	llvm::BasicBlock* createBasicBlock(llvm::Function* function=nullptr, std::string name="");
 	llvm::BranchInst* createCondBranch(llvm::BasicBlock* _if, llvm::Value* cond, llvm::BasicBlock* _else=nullptr);
+	llvm::BranchInst* createBranch(llvm::BasicBlock* dest);
 
 	void setInsertPoint(llvm::BasicBlock* block);
 	llvm::BasicBlock* getCurrentBasicBlock();
@@ -61,19 +62,19 @@ public:
 
 	llvm::Value* buildNeInt(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildNeDouble(llvm::Value* left, llvm::Value* right);
-	
+
 	llvm::Value* buildGtInt(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildGtDouble(llvm::Value* left, llvm::Value* right);
-	
+
 	llvm::Value* buildGeInt(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildGeDouble(llvm::Value* left, llvm::Value* right);
-	
+
 	llvm::Value* buildLtInt(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildLtDouble(llvm::Value* left, llvm::Value* right);
-	
+
 	llvm::Value* buildLeInt(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildLeDouble(llvm::Value* left, llvm::Value* right);
-	
+
 
 	// testes apenas!
 	llvm::Function* buildMain();
