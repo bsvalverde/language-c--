@@ -1,4 +1,5 @@
 /* Symbol Table */
+//TODO verificar atributos/metodos privados
 #pragma once
 
 #include <list>
@@ -9,7 +10,6 @@
 #include "enums.h"
 
 extern void yyerror(const char* s, ...);
-extern bool generateCode;
 
 namespace ST {
 
@@ -25,7 +25,7 @@ public:
 	Symbol* addFunction(std::string name, Type type, std::list<Symbol*> parameters);
 	Symbol* getFunction(std::string name, int argNo);
 
-	void searchForMain();
+	void verifyMain();
 //private:
 	bool hasSymbol(std::string name);
 

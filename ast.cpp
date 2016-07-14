@@ -292,6 +292,10 @@ bool Conditional::hasReturn() {
 }
 
 bool Loop::hasReturn() {
-	//TODO
+	return this->_do;
+}
+
+bool Coertion::hasReturn() {
+	yyerror("fatal: não devia chegar aqui!");
 	return false;
 }

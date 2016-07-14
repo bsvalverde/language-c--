@@ -4,6 +4,7 @@
 #include "parser.h"
 extern int yylineno;
 void yyerror(const char* s, ...);
+extern bool generateCode;
 %}
 
 %option noyywrap nodefault yylineno
@@ -92,4 +93,5 @@ void yyerror(const char *s, ...){
     std::fprintf(stderr, "[Linha %d] Erro ", yylineno);
     std::vfprintf(stderr, s, ap);
     std::fprintf(stderr, "\n");
+    generateCode = false;
 }

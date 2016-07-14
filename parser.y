@@ -26,6 +26,8 @@ extern void yyerror(const char* s, ...);
 
 	AST::Node* node;
 	AST::Block* block;
+
+	ST::SymTable* symT;
 }
 
 //Definição dos tokens
@@ -46,10 +48,11 @@ extern void yyerror(const char* s, ...);
 
 //Definição de tipos não-terminais
 %type <block> program code cmds ccmds
-%type <node> global cmd decl listvar attr expr const fun params cond loop ret
+%type <node> global cmd decl listvar attr expr const fun funcall params cond loop ret
 %type <typeEnum> type
 %type <argList> args
-%type <node> ftype newscope endscope
+%type <node> ftype endscope
+%type <symT> newscope
 
 //Precedencia de operadores
 %left T_OR T_AND
@@ -70,8 +73,7 @@ extern void yyerror(const char* s, ...);
 
 program	: code {
 			root = $1;
-			symtable->searchForMain();
-			//TODO main não pode ter argumentos
+			symtable->verifyMain();
 		}
 		;
 
@@ -96,20 +98,19 @@ decl	: type listvar {
 			ST::Symbol* s = symtable->addVariable($2, $1);
 			AST::Variable* var = new AST::Variable($2, NULL, $1, symtable);
 			$$ = new AST::AssignVar(var, $4, symtable);
-		} //TODO variável não pode ser void
+		}
 		;
 
-fun 	: type T_ID ftype T_APAR newscope params T_FPAR T_ACH cmds T_FCH {
+fun 	: type T_ID ftype T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
 			AST::Parameter* par = (AST::Parameter*)$6;
 			std::list<ST::Symbol*> parameters;
 			while(par != NULL){
-				parameters.push_front(symtable->getVariable(par->name));
+				parameters.push_front($5->getVariable(par->name));
 				par = (AST::Parameter*)par->next;
 			}
-			symtable = symtable->superScope;
 			symtable->addFunction($2, $1, parameters);
 			$$ = new AST::Function($2, $6, $9, $1, symtable);
-		} //TODO verificar se tem return, e qual o tipo
+		}
 		;
 
 type 	: T_DINT {
@@ -151,9 +152,8 @@ expr	: const
 			ST::Symbol* s = symtable->getVariable($1);
 			$$ = new AST::Variable($1, NULL, s->type, symtable);
 		}
-		| T_ID T_APAR args T_FPAR {
-			ST::Symbol* s = symtable->getFunction($1, $3->arguments.size());
-			$$ = new AST::FunCall($1, $3, s->type, symtable);
+		| funcall {
+			$$ = $1;
 		}
 		| expr T_PLUS expr {
 			$$ = new AST::BinOp($1, plus, $3);
@@ -207,6 +207,12 @@ const   : T_INT { $$ = new AST::Const($1, Type::_int); }
 		| T_BOOL { $$ = new AST::Const($1, Type::_bool); }
 		;
 
+funcall : T_ID T_APAR args T_FPAR {
+			ST::Symbol* s = symtable->getFunction($1, $3->arguments.size());
+			$$ = new AST::FunCall($1, $3, s->type, symtable);
+		}
+		;
+
 params	: type T_ID {
 			symtable->addVariable($2, $1);
 			$$ = new AST::Parameter($2, NULL, $1);
@@ -243,11 +249,12 @@ args 	: expr {
 
 cmd 	: decl T_ENDL
 		| attr T_ENDL
+		| funcall T_ENDL
 		| cond
 		| loop
 		| ret T_ENDL
-		| error T_ENDL { yyerrok; $$=NULL; } //TODO ver como faz pra acusar erro dentro de funcao
-		; //TODO chamar função void
+		| error T_ENDL { yyerrok; $$=NULL; }
+		;
 
 attr 	: T_ID T_ATTR expr {
 			ST::Symbol* symbol = symtable->getVariable($1);
@@ -272,9 +279,12 @@ ccmds	: newscope cmd endscope {
 		}
 		;
 
-loop	: T_WHILE T_APAR expr T_FPAR T_ACH newscope cmds endscope T_ACH {
-			$$ = new AST::Loop($3, $7);
-		} //TODO do while
+loop	: T_WHILE T_APAR expr T_FPAR T_ACH newscope cmds endscope T_FCH {
+			$$ = new AST::Loop($3, $7, false);
+		}
+		| T_DO T_ACH newscope cmds endscope T_FCH T_WHILE T_APAR expr T_FPAR T_ENDL {
+			$$ = new AST::Loop($9, $4, true);
+		}
 		;
 
 ret 	: T_RET {
@@ -287,14 +297,12 @@ ret 	: T_RET {
 
 newscope: {
 			symtable = new ST::SymTable(symtable);
-			$$ = NULL;
+			$$ = symtable;
 		}
 		;
 
 endscope: {
-			ST::SymTable oldtable = symtable;
 			symtable = symtable->superScope;
-			//??delete oldtable;
 			$$ = NULL;
 		}
 		;

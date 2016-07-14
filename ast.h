@@ -88,7 +88,9 @@ public:
 	Node* var;
 	Node* value;
 	ST::SymTable* parentST;
-	AssignVar(Node* var, Node* value, ST::SymTable* parentST) : var(var), value(value), parentST(parentST)  { }
+	AssignVar(Node* var, Node* value, ST::SymTable* parentST) : var(var), value(value), parentST(parentST)  {
+		//TODO se expr for void gera erro
+	}
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();
 };
@@ -123,7 +125,6 @@ public:
 		this->type = type;
 		if(!this->hasReturn()){
 			yyerror("semântico: função %s sem comando de retorno certamente alcançável.", this->name.c_str());
-			generateCode = false;
 		}
 	}
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
@@ -165,10 +166,8 @@ public:
 		if(this->type != fType){
 			if(this->type == Type::_void){
 				yyerror("semântico: comando de retorno sem valor em função não void.");
-				generateCode = false;
 			} else {
 				yyerror("semântico: comando de retorno com valor em função void.");
-				generateCode = false;
 			}
 		}
 	}
@@ -190,10 +189,18 @@ class Loop : public Node {
 public:
 	Node* condition;
 	Node* loopBlock;
-	Loop(Node* condition, Node* loopBlock) : condition(condition), loopBlock(loopBlock) { }
+	bool _do;
+	Loop(Node* condition, Node* loopBlock, bool _do) : condition(condition), loopBlock(loopBlock), _do (_do) { }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();
-    //colocar um bool pra ver se é do while ou só while?
+};
+
+class Coertion : public Node {
+public:
+	Node* target;
+	Coertion(Node* target, Type type) : target(target) { this->type = type; }
+	virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
+	bool hasReturn();
 };
 
 }
