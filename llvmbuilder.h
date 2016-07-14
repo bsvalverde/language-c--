@@ -57,11 +57,23 @@ public:
 	llvm::Value* buildNeg(llvm::Value* value);
 
 	llvm::Value* buildEqInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildEqDouble(llvm::Value* left, llvm::Value* right);
+
 	llvm::Value* buildNeInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildNeDouble(llvm::Value* left, llvm::Value* right);
+	
 	llvm::Value* buildGtInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildGtDouble(llvm::Value* left, llvm::Value* right);
+	
 	llvm::Value* buildGeInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildGeDouble(llvm::Value* left, llvm::Value* right);
+	
 	llvm::Value* buildLtInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildLtDouble(llvm::Value* left, llvm::Value* right);
+	
 	llvm::Value* buildLeInt(llvm::Value* left, llvm::Value* right);
+	llvm::Value* buildLeDouble(llvm::Value* left, llvm::Value* right);
+	
 
 	// testes apenas!
 	llvm::Function* buildMain();

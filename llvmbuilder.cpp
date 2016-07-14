@@ -172,24 +172,48 @@ llvm::Value* LlvmBuilder::buildEqInt(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateICmpEQ(left, right, "eq int");
 }
 
+llvm::Value* LlvmBuilder::buildEqDouble(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateFCmpOEQ(left, right, "eq double");
+}
+
 llvm::Value* LlvmBuilder::buildNeInt(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateICmpNE(left, right, "ne int");
+}
+
+llvm::Value* LlvmBuilder::buildNeDouble(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateFCmpONE(left, right, "ne double");
 }
 
 llvm::Value* LlvmBuilder::buildGtInt(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateICmpSGT(left, right, "gt int");
 }
 
+llvm::Value* LlvmBuilder::buildGtDouble(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateFCmpOGT(left, right, "gt double");
+}
+
 llvm::Value* LlvmBuilder::buildGeInt(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateICmpSGE(left, right, "ge int");
+}
+
+llvm::Value* LlvmBuilder::buildGeDouble(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateFCmpOGE(left, right, "ge double");
 }
 
 llvm::Value* LlvmBuilder::buildLtInt(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateICmpSLT(left, right, "lt int");
 }
 
+llvm::Value* LlvmBuilder::buildLtDouble(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateFCmpOLT(left, right, "lt double");
+}
+
 llvm::Value* LlvmBuilder::buildLeInt(llvm::Value* left, llvm::Value* right) {
 	return Builder.CreateICmpSLE(left, right, "le int");
+}
+
+llvm::Value* LlvmBuilder::buildLeDouble(llvm::Value* left, llvm::Value* right) {
+	return Builder.CreateFCmpOLE(left, right, "le double");
 }
 
 llvm::Value* LlvmBuilder::buildNeg(llvm::Value* value) {
