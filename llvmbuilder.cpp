@@ -39,10 +39,10 @@ void LlvmBuilder::run() {
 
 //teste
 llvm::Function* LlvmBuilder::buildMain() {
-	llvm::Function* _main = this->createFunction("main");
+	llvm::Function* _main = this->createFunction("main", std::vector<llvm::Type*>());
 	llvm::BasicBlock* mainblock = this->createBasicBlock(_main, "mainBB");
 
-	llvm::Function* func2 = this->createFunction("func2");
+	llvm::Function* func2 = this->createFunction("func2", std::vector<llvm::Type*>());
 	llvm::BasicBlock* blockFunc2 = this->createBasicBlock(func2, "func2BB");
 	Builder.SetInsertPoint(blockFunc2);
 	this->createReturn(this->buildInt(4));
@@ -80,9 +80,9 @@ void LlvmBuilder::setVariable(llvm::Value* value, llvm::AllocaInst* var) {
 }
 
 //TODO Só int por enquanto
-llvm::Function* LlvmBuilder::createFunction(std::string name) {
+llvm::Function* LlvmBuilder::createFunction(std::string name, std::vector<llvm::Type*> params) {
 	llvm::Type* typeint = llvm::Type::getInt32Ty(context);
-	llvm::FunctionType* funcType = llvm::FunctionType::get(typeint, false);
+	llvm::FunctionType* funcType = llvm::FunctionType::get(typeint, params, false);
 
 	return llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, name, this->module);
 }
@@ -111,8 +111,7 @@ llvm::BranchInst* LlvmBuilder::createBranch(llvm::BasicBlock* dest) {
 	return Builder.CreateBr(dest);
 }
 
-llvm::CallInst* LlvmBuilder::createFunctionCall(llvm::Function* function, llvm::ArrayRef<llvm::Value*> args) {
-
+llvm::CallInst* LlvmBuilder::createFunctionCall(llvm::Function* function, std::vector<llvm::Value*> args) {
 	return Builder.CreateCall(function, args);
 }
 
@@ -222,4 +221,16 @@ llvm::Value* LlvmBuilder::buildLeDouble(llvm::Value* left, llvm::Value* right) {
 
 llvm::Value* LlvmBuilder::buildNeg(llvm::Value* value) {
 	return Builder.CreateNeg(value, "neg");
+}
+
+llvm::Type* LlvmBuilder::createIntType(){
+	return llvm::Type::getInt32Ty(context);
+}
+
+llvm::Type* LlvmBuilder::createDoubleType() {
+	return llvm::Type::getDoubleTy(context);
+}
+
+llvm::Type* LlvmBuilder::createBoolType() {
+	return llvm::Type::getInt1Ty(context);
 }

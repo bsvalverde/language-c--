@@ -35,7 +35,7 @@ public:
 
 class Symbol {
 public:
-	Symbol(std::string name, Kind kind=Kind::undefined) { }
+	Symbol(std::string name, Kind kind=Kind::undefined) : name(name) { }
 	Symbol(std::string name, Type type, Kind kind=Kind::undefined) : name(name), type(type) { }
 	void setType(Type type);
 

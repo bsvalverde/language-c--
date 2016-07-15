@@ -158,27 +158,18 @@ public:
 class Function : public Node {
 public:
 	std::string name;
-	Node* params;
+	int paramsNo;
 	Block* code;
 
 	llvm::BasicBlock* functionBB;
 	ST::SymTable* parentST;
 
-	Function(std::string name, Node* params, Block* code, Type type, ST::SymTable* parentST) : name(name), params(params), code(code), parentST(parentST) {
+	Function(std::string name, int paramsNo, Block* code, Type type, ST::SymTable* parentST) : name(name), paramsNo(paramsNo), code(code), parentST(parentST) {
 		this->type = type;
 		if(!this->hasReturn()){
 			yyerror("semântico: função %s sem comando de retorno certamente alcançável.", this->name.c_str());
 		}
 	}
-    virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
-    bool hasReturn();
-};
-
-class Parameter : public Node {
-public:
-	std::string name;
-	Node* next;	
-	Parameter(std::string name, Node* next, Type type) : name(name), next(next) { this->type = type; }
     virtual llvm::Value* analyzeTree(LlvmBuilder* llvmbuilder);
     bool hasReturn();
 };

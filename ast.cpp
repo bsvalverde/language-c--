@@ -123,53 +123,61 @@ llvm::Value* Par::analyzeTree(LlvmBuilder* llvmbuilder) {
 // Function usa Parameters
 llvm::Value* Function::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "Function" << std::endl;
-	llvm::Function* function = llvmbuilder->createFunction(this->name);
-
-	Parameter* params = (Parameter*) this->params;
-	int argSize = 0;
-	if(params) {
-		Variable* var = (Variable*) params->next;
-		while(var) {
-			var = (Variable*) var->next;
-			argSize++;
-		}	
+	ST::Symbol* f = this->parentST->superScope->getFunction(this->name, this->paramsNo);
+	std::list<ST::Symbol*> params = ((ST::Function*)f)->parameters;
+	std::vector<llvm::Type*> llvmParams;
+	std::vector<std::string> paramNames;
+	std::list<ST::Symbol*>::iterator it = params.begin();
+	while(it != params.end()){
+		switch((*it)->type){
+			case Type::_int:
+				llvmParams.push_back(llvmbuilder->createIntType());
+				break;
+			case Type::_double:
+				llvmParams.push_back(llvmbuilder->createDoubleType());
+				break;
+			case Type::_bool:
+				llvmParams.push_back(llvmbuilder->createBoolType());
+				break;
+			case Type::desconhecido: case Type::_void:
+				yyerror("fatal. Não deveria chegar aqui.");
+		}
+		std::cout << (*it)->name <<std::endl;
+		paramNames.push_back((*it)->name);
+		it++;
 	}
+	llvm::Function* function = llvmbuilder->createFunction(this->name, llvmParams);
 
-	this->parentST->getFunction(this->name, argSize)->func = function;
+	f->func = function;
 
 	this->functionBB = llvmbuilder->createBasicBlock(function, this->name+"BB");
 	llvmbuilder->setInsertPoint(this->functionBB);
+
+	llvm::Function::arg_iterator paramIt = function->arg_begin();
+	for(int i = 0; i < paramNames.size(); i++){
+		paramIt->setName(paramNames[i]);
+		this->parentST->getVariable(paramNames[i])->inst = llvmbuilder->storeVariable(paramNames[i], paramIt);
+		paramIt++;
+	}
 
 	code->analyzeTree(llvmbuilder);
 
 	return function;
 }
 
-// TODO retornar ArrayRef de Value*, e não Value*
-llvm::Value* Parameter::analyzeTree(LlvmBuilder* llvmbuilder) {
-	std::cout << "Parameter" << std::endl;
-	return nullptr;
-}
-
 // FunCall usa Arguments
 llvm::Value* FunCall::analyzeTree(LlvmBuilder* llvmbuilder) {
 	std::cout << "FunCall" << std::endl;
 
-	std::vector<llvm::Value*> argsArrayRef;
-	Arguments* args = (Arguments*) this->args;
-
-	Variable* var;
-	for(Node* node : args->arguments) {
-		if(node != NULL)
-			var = (Variable*) node;
-			
-			llvm::AllocaInst* inst = this->parentST->getVariable(var->name)->inst;
-			argsArrayRef.push_back(inst);
+	std::vector<llvm::Value*> args;
+	Arguments* argsNode = (Arguments*) this->args;
+	for(Node* node : argsNode->arguments) {
+		args.push_back(node->analyzeTree(llvmbuilder));
 	}
 
-	llvm::Function* func = ((ST::Function*) this->parentST->getFunction(this->name, args->arguments.size()))->func;
+	llvm::Function* func = ((ST::Function*) this->parentST->getFunction(this->name, args.size()))->func;
 
-	return llvmbuilder->createFunctionCall(func, llvm::makeArrayRef(argsArrayRef));
+	return llvmbuilder->createFunctionCall(func, args);
 	// return nullptr;
 }
 
@@ -283,11 +291,6 @@ bool Par::hasReturn() {
 
 bool Function::hasReturn() {
 	return code->hasReturn();
-}
-
-bool Parameter::hasReturn() {
-	yyerror("fatal: não devia chegar aqui!");
-	return false;
 }
 
 bool FunCall::hasReturn() {

@@ -23,7 +23,7 @@ public:
 	llvm::Value* loadVariable(std::string name, llvm::AllocaInst* var);
 	void setVariable(llvm::Value* value, llvm::AllocaInst* var);
 
-	llvm::Function* createFunction(std::string name);
+	llvm::Function* createFunction(std::string name, std::vector<llvm::Type*> params);
 	llvm::BasicBlock* createBasicBlock(llvm::Function* function=nullptr, std::string name="");
 	llvm::BranchInst* createCondBranch(llvm::BasicBlock* _if, llvm::Value* cond, llvm::BasicBlock* _else=nullptr);
 	llvm::BranchInst* createBranch(llvm::BasicBlock* dest);
@@ -33,7 +33,7 @@ public:
 
 	void createReturn(llvm::Value* value);
 
-	llvm::CallInst* createFunctionCall(llvm::Function* function, llvm::ArrayRef<llvm::Value*> args);
+	llvm::CallInst* createFunctionCall(llvm::Function* function, std::vector<llvm::Value*> args);
 	
 	llvm::Value* buildInt(int value);
 	llvm::Value* buildDouble(double value);
@@ -75,6 +75,9 @@ public:
 	llvm::Value* buildLeInt(llvm::Value* left, llvm::Value* right);
 	llvm::Value* buildLeDouble(llvm::Value* left, llvm::Value* right);
 
+	llvm::Type* createIntType();
+	llvm::Type* createDoubleType();
+	llvm::Type* createBoolType();
 
 	// testes apenas!
 	llvm::Function* buildMain();

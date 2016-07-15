@@ -102,14 +102,14 @@ decl	: type listvar {
 		;
 
 fun 	: type T_ID ftype T_APAR newscope params T_FPAR T_ACH cmds endscope T_FCH {
-			AST::Parameter* par = (AST::Parameter*)$6;
+			AST::Variable* par = (AST::Variable*)$6;
 			std::list<ST::Symbol*> parameters;
 			while(par != NULL){
 				parameters.push_front($5->getVariable(par->name));
-				par = (AST::Parameter*)par->next;
+				par = (AST::Variable*)par->next;
 			}
 			symtable->addFunction($2, $1, parameters);
-			$$ = new AST::Function($2, $6, $9, $1, symtable);
+			$$ = new AST::Function($2, parameters.size(), $9, $1, $5);
 		}
 		;
 
@@ -215,11 +215,11 @@ funcall : T_ID T_APAR args T_FPAR {
 
 params	: type T_ID {
 			symtable->addVariable($2, $1);
-			$$ = new AST::Parameter($2, NULL, $1);
+			$$ = new AST::Variable($2, NULL, $1, symtable);
 		}
 		| params T_COMMA type T_ID {
 			symtable->addVariable($4, $3);
-			$$ = new AST::Parameter($4, $1, $3);
+			$$ = new AST::Variable($4, $1, $3, symtable);
 		}
 		| {
 			$$ = NULL;
